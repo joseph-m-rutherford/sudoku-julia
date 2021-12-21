@@ -13,6 +13,12 @@ function test_puzzle_2()
     @test puzzle_n(2) == puzzle_2_reference
 end
 
+function test_puzzle_rank_array()
+    @test get_rank(puzzle_n(2)) == 2
+    @test get_rank(puzzle_n(3)) == 3
+    @test get_rank(puzzle_n(4)) == 4
+end
+
 function test_solvable_puzzle_2_construction()
     puzzle_2_reference = Array{Int16}(undef,(4,4))
     puzzle_2_reference[:] = [1,2,3,4, 3,4,1,2, 2,3,4,1, 4,1,2,3][:]
@@ -71,8 +77,9 @@ function test_solvable_puzzle_2_modification()
     @test uncertainty(p2) == 16
 end
 
-@testset "Sudoku Puzzle rank == 2 definitions" begin
+@testset "Sudoku Puzzle definitions" begin
     test_puzzle_2()
+    test_puzzle_rank_array()
     test_solvable_puzzle_2_construction()
     test_solvable_puzzle_2_modification()
 end

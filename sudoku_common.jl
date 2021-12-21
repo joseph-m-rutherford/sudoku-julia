@@ -79,12 +79,24 @@ struct SolvablePuzzle
     end
 end
 
-function get_rank(puzzle::SolvablePuzzle)
-    rank=Int16(sqrt(sqrt(length(puzzle.grid))))
-    if length(puzzle.grid) != rank*rank*rank*rank
-        throw(DimensionMismatch("Array length is not a square-of-a-square")) 
+function get_rank(puzzle::Array)
+    # Check grid size/shape
+    grid_shape = size(puzzle)
+    if grid_shape[1] == (1,1) || grid_shape == (1,) # flattened grid
+        return 1
+    elseif grid_shape == (4,4) || grid_shape == (16,)
+        return 2
+    elseif grid_shape == (9,9) || grid_shape == (81,)
+        return 3
+    elseif grid_shape == (16,16) || grid_shape == (256,)
+        return 4
+    else
+        throw(DimensionMismatch("Puzzles must of shape (rank*rank,rank*rank), rank < 5"))
     end
-    return rank
+end
+
+function get_rank(puzzle::SolvablePuzzle)
+    rank=get_rank(puzzle.grid)
 end
 
 function set_unknown(puzzle::SolvablePuzzle,row,col)
@@ -123,7 +135,7 @@ end
 
 function uncertainty(puzzle::SolvablePuzzle)
     result::UInt = 0
-    rank = get_rank(puzzle)
+    rank = get_rank(puzzle.grid)
     rank_squared = rank*rank
     for i = 1:length(puzzle.grid)
         if puzzle.grid[i].value == 0

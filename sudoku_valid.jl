@@ -19,10 +19,7 @@ function valid_subarray(rank,test)
 end
 
 function valid_puzzle(puzzle)
-    rank=Int16(sqrt(sqrt(length(puzzle))))
-    if length(puzzle) != rank*rank*rank*rank
-        throw(DimensionMismatch("Array length is not a square-of-a-square"))
-    end
+    rank=get_rank(puzzle)
     rank_squared = rank*rank
     result = true
     # use logical AND throughout loops

@@ -6,10 +6,8 @@
 # This file depends upon sudoku_common.jl
 
 function row_block_permute(puzzle,row_block_a,row_block_b)
-    rank=Int16(sqrt(sqrt(length(puzzle))))
-    if length(puzzle) != rank*rank*rank*rank
-        throw(DimensionMismatch("Array length is not a square-of-a-square"))
-    elseif row_block_a < 1 || row_block_a > rank
+    rank=get_rank(puzzle)
+    if row_block_a < 1 || row_block_a > rank
         throw(DomainError("Invalid row block A"))
     elseif row_block_b < 1 || row_block_b > rank
         throw(DomainError("Invalid row block B"))
@@ -28,10 +26,8 @@ function row_block_permute(puzzle,row_block_a,row_block_b)
 end
 
 function col_block_permute(puzzle,col_block_a,col_block_b)
-    rank=Int16(sqrt(sqrt(length(puzzle))))
-    if length(puzzle) != rank*rank*rank*rank
-        throw(DimensionMismatch("Array length is not a square-of-a-square"))
-    elseif col_block_a < 1 || col_block_a > rank
+    rank = get_rank(puzzle)
+    if col_block_a < 1 || col_block_a > rank
         throw(DomainError("Invalid col block A"))
     elseif col_block_b < 1 || col_block_b > rank
         throw(DomainError("Invalid col block B"))
@@ -50,10 +46,8 @@ function col_block_permute(puzzle,col_block_a,col_block_b)
 end
 
 function row_permute(puzzle,row_block,subrow_a,subrow_b)
-    rank=Int16(sqrt(sqrt(length(puzzle))))
-    if length(puzzle) != rank*rank*rank*rank
-        throw(DimensionMismatch("Array length is not a square-of-a-square"))
-    elseif row_block < 1 || row_block > rank
+    rank = get_rank(puzzle)
+    if row_block < 1 || row_block > rank
         throw(DomainError("Invalid row block"))
     elseif subrow_a < 1 || subrow_a > rank
         throw(DomainError("Invalid subrow A"))
@@ -72,10 +66,8 @@ function row_permute(puzzle,row_block,subrow_a,subrow_b)
 end
 
 function col_permute(puzzle,col_block,subcol_a,subcol_b)
-    rank=Int16(sqrt(sqrt(length(puzzle))))
-    if length(puzzle) != rank*rank*rank*rank
-        throw(DimensionMismatch("Array length is not a square-of-a-square"))
-    elseif col_block < 1 || col_block > rank
+    rank=get_rank(puzzle)
+    if col_block < 1 || col_block > rank
         throw(DomainError("Invalid col block"))
     elseif subcol_a < 1 || subcol_a > rank
         throw(DomainError("Invalid subcol A"))
@@ -94,10 +86,7 @@ function col_permute(puzzle,col_block,subcol_a,subcol_b)
 end
 
 function mirror_horizontal(puzzle)
-    rank=Int16(sqrt(sqrt(length(puzzle))))
-    if length(puzzle) != rank*rank*rank*rank
-        throw(DimensionMismatch("Array length is not a square-of-a-square"))
-    end
+    rank=get_rank(puzzle)
     if rank > 1 # blockwise swapping
         half_rank = Int16(floor(rank/2))
         for i = 1:half_rank # swap blocks
@@ -111,10 +100,7 @@ function mirror_horizontal(puzzle)
 end
 
 function mirror_vertical(puzzle)
-    rank=Int16(sqrt(sqrt(length(puzzle))))
-    if length(puzzle) != rank*rank*rank*rank
-        throw(DimensionMismatch("Array length is not a square-of-a-square"))
-    end
+    rank=get_rank(puzzle)
     # no mirroring for rank 1
     if rank > 1 # blockwise swapping
         half_rank = Int16(floor(rank/2))
