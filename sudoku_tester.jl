@@ -16,6 +16,8 @@ include("sudoku_common.jl")
 include("sudoku_common_test.jl")
 include("sudoku_permute.jl")
 include("sudoku_permute_test.jl")
+include("sudoku_compose.jl")
+include("sudoku_compose_test.jl")
 include("sudoku_valid.jl")
 include("sudoku_valid_test.jl")
 

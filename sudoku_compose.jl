@@ -5,8 +5,11 @@
 #
 # This code depends upon sudoku_common.jl and sudoku_permute.jl
 
+# Given a puzzle and a RNG, apply some permutation to the puzzle.
+# Report the permutation as a variable-length sequence of integers.
+
 function random_permutation!(puzzle,rng)
-    rank = Sudoku.get_rank(puzzle)
+    rank = get_rank(puzzle)
     # Symbols to select permutation type
     #undefined = 0 # less than a valid choice
     #column = 1
@@ -23,33 +26,34 @@ function random_permutation!(puzzle,rng)
         sub_row_col_b = 1 + ((sub_row_col_a - 1 + rand(rng,1:(rank-1))) % rank)
         
         if permutation_type == 1
-            Sudoku.col_permute(puzzle.grid,block,sub_row_col_a,sub_row_col_b)
+            col_permute(puzzle.grid,block,sub_row_col_a,sub_row_col_b)
         else
-            Sudoku.row_permute(puzzle.grid,block,sub_row_col_a,sub_row_col_b)
+            row_permute(puzzle.grid,block,sub_row_col_a,sub_row_col_b)
         end
         return [permutation_type,block,sub_row_col_a,sub_row_col_b]
     elseif permutation_type == 2 || permutation_type == 4
         source_block = rand(rng,1:rank)
         destination_block = 1 + ((source_block - 1 + rand(rng,1:(rank-1))) % rank)
         if permutation_type == 2
-            Sudoku.col_block_permute(puzzle.grid,source_block,destination_block)
+            col_block_permute(puzzle.grid,source_block,destination_block)
         else
-            Sudoku.row_block_permute(puzzle.grid,source_block,destination_block)
+            row_block_permute(puzzle.grid,source_block,destination_block)
         end
         return [permutation_type,source_block,destination_block]
     elseif permutation_type == 5
-        Sudoku.mirror_horizontal(puzzle.grid)
+        mirror_horizontal(puzzle.grid)
         return [permutation_type]
     elseif permutation_type == 6
-        Sudoku.mirror_vertical(puzzle.grid)
+        mirror_vertical(puzzle.grid)
         return [permutation_type]
     end
 end
 
+# Given a starting solution, an RNG, and a number of permutations, make new solution.
 function random_solution(rank,rng,permutation_count)
     result = SolvablePuzzle(rank)
     for p = 1:permutation_count
-       permutation = random_permutation!(result,rng)
+       random_permutation!(result,rng)
     end
     return result
 end
