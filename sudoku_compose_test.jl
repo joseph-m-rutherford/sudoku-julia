@@ -8,9 +8,9 @@ using Random
 function multiple_random_permutations!(seed,results)
     rng = MersenneTwister(seed)
     num_tests = size(results)[1]
-    puzzle = SolvablePuzzle(3)
+    puzzle = Sudoku.SolvablePuzzle(3)
     for i = 1:num_tests
-        permutation = random_permutation!(puzzle,rng)
+        permutation = Sudoku.random_permutation!(puzzle,rng)
         results[i,1:length(permutation)] = permutation[:]
     end
 end
@@ -131,5 +131,5 @@ function test_random_permutations()
 end
 
 @testset "Composition helpers statistics" begin
-    @time test_random_permutations()
+    test_random_permutations()
 end
