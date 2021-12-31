@@ -7,16 +7,16 @@
 using Test
 
 function test_valid_subarray()
-    @test valid_subarray(3,[1,2,3,4,5,6,7,8,9])
-    @test valid_subarray(3,[1,2,3,7,8,9,4,5,6])
-    @test !valid_subarray(3,[2,2,3,4,5,6,7,8,9])
+    @test Sudoku.valid_subarray(3,[1,2,3,4,5,6,7,8,9])
+    @test Sudoku.valid_subarray(3,[1,2,3,7,8,9,4,5,6])
+    @test !Sudoku.valid_subarray(3,[2,2,3,4,5,6,7,8,9])
 end
 
 function test_valid_puzzle_2()
-    p = puzzle_n(2)
-    @test valid_puzzle(p)
+    p = Sudoku.puzzle_n(2)
+    @test Sudoku.valid_puzzle(p)
     p[1,1] = p[1,2] # invalidate puzzle
-    @test !valid_puzzle(p)
+    @test !Sudoku.valid_puzzle(p)
 end
 
 @testset "Puzzle validity checks" begin

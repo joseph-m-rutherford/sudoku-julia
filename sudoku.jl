@@ -11,11 +11,12 @@
 
 module Sudoku
 
-export as_text_grid, set_unknown, SolvablePuzzle, solve_puzzle
+export as_text_grid, random_solution, random_puzzle, SolvablePuzzle, solve_puzzle
 
 include("sudoku_common.jl")
 include("sudoku_display.jl")
 include("sudoku_permute.jl")
+include("sudoku_compose.jl")
 include("sudoku_valid.jl")
 include("sudoku_solve.jl")
 
