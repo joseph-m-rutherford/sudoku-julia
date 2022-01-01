@@ -92,8 +92,5 @@ function solve_puzzle!(puzzle::SolvablePuzzle)
         end
         iteration += 1
     end
-    print("Iteration ")
-    print(iteration)
-    print(" Uncertainty ")
-    print(current_uncertainty)
+    return [iteration,current_uncertainty]
 end
