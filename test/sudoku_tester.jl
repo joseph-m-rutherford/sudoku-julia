@@ -12,7 +12,7 @@
 
 module SudokuTester
 
-include("sudoku.jl")
+include("../src/sudoku.jl")
 
 include("sudoku_common_test.jl")
 include("sudoku_permute_test.jl")
