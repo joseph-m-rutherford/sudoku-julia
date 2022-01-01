@@ -1,21 +1,17 @@
 # sudoku-julia
 Solving Sudoku puzzles the fun way -- with programming!
 
-Copyright 2021 Joseph M. Rutherford
+Copyright (c) 2021, Joseph M. Rutherford
+All rights reserved.
+Code and documenatation provided under the license in the LICENSE file.
 
-This project is what happened when I solved a Sudoku puzzle, and took note of
-the process my brain followed to compose a solution.  Once I could see an
-algorithm, I was hooked and knew I needed to code it up.  Then I consulted with
-a family-member on how she solved the puzzles, and I saw that there really was
-a lot of fun to be had in the process of the solution.
+This project is about me learning to solve an interesting problem
+(Sudoku puzzles) in a new programming language. The primary goal is for
+me to learn Julia, and learning about a popular puzzle is secondary.  The
+concrete goal of solving the puzzles is but a means to the end of learning.
+If this helps anyone else learn, too, then all the better!
 
-If I wanted to solve puzzles, of course I could just go find any of a number of
-solutions already available, which isn't any fun. I've been looking for an
-excuse to learn Julia, so this project really is about me learning to solve an
-interesting problem in a new language. It just so happens that one needs a goal
-in order to progress, so solving Sudokus is a means to the end of learning.
-
-This project was ironed out in some spare time between Thanksgiving 2021 and
-the initialization of the repository on December 17, 2021.
+The initial form of this project was ironed out in some spare time between
+Thanksgiving 2021 and the initialization of the repository on December 17, 2021.
 
 Everything in the repository is covered by the contents of LICENSE
