@@ -2,6 +2,8 @@
 # All rights reserved.
 #
 # Code provided under the license contained in the LICENSE file.
+#
+# This file depends upon the Sudoku module being defined first.
 using Test
 using Random
 
@@ -15,8 +17,7 @@ function multiple_random_permutations!(seed,results)
     end
 end
 
-function test_random_permutations()
-    num_tests = 4000000 # number of calls to test
+function random_permutations(num_tests)
     all_results = zeros(Int,(num_tests,4))
     
     # Plan to split the work across all worker
@@ -130,6 +131,38 @@ function test_random_permutations()
     @test abs(column_3_symbol_counts[9] - (1*num_tests/63))/num_tests < MAX_RESIDUAL_ERROR
 end
 
-@testset "Composition helpers statistics" begin
-    test_random_permutations()
+function symbol_swap()
+    puzzle_2_input = Array{Int16}(undef,(4,4))
+    puzzle_2_input[:] = [1,2,0,3, 0,3,1,2, 2,0,3,1, 3,1,2,0][:]
+    p2 = Sudoku.SolvablePuzzle(2)
+    Sudoku.assign_values!(p2,puzzle_2_input)
+    for i = 1:length(p2.grid)
+        if p2.grid[i].value == 0
+            # force possibilities to be either index 4 or 1
+            p = BitVector(undef,4)
+            p.chunks[1] = 0x9
+            p2.grid[i] = Sudoku.PuzzleEntry(UInt8(0),p)
+        end
+    end
+    # Interchange symbols 4 and 2
+    puzzle_2_reference = Array{Int16}(undef,(4,4))
+    puzzle_2_reference[:] = [1,4,0,3, 0,3,1,4, 4,0,3,1, 3,1,4,0][:]
+    Sudoku.symbol_swap!(p2,4,2)
+    for i = length(p2.grid)
+        @test p2.grid[i].value == puzzle_2_reference[i]
+        if puzzle_2_reference[i] == 0
+            @test p2.grid[i].possibilities == 0x3
+        else
+            @test p2.grid[i].possibilities == (0x1 << (puzzle_2_reference[i]-1))
+        end
+    end
 end
+
+function random_puzzle()
+    rng = MersenneTwister(123456)
+    for i = 1:1000
+        solution, puzzle = Sudoku.random_puzzle(3,rng,1000,50)
+        @test Sudoku.valid_puzzle(Sudoku.as_values(solution))
+    end
+end
+

@@ -5,7 +5,7 @@
 #
 # This file depends upon sudoku_common.jl
 
-function row_block_permute(puzzle,row_block_a,row_block_b)
+function row_block_permute!(puzzle,row_block_a,row_block_b)
     rank=get_rank(puzzle)
     if row_block_a < 1 || row_block_a > rank
         throw(DomainError("Invalid row block A"))
@@ -25,7 +25,7 @@ function row_block_permute(puzzle,row_block_a,row_block_b)
     puzzle[start_row_b:stop_row_b,:] = block[:,:]
 end
 
-function col_block_permute(puzzle,col_block_a,col_block_b)
+function col_block_permute!(puzzle,col_block_a,col_block_b)
     rank = get_rank(puzzle)
     if col_block_a < 1 || col_block_a > rank
         throw(DomainError("Invalid col block A"))
@@ -45,7 +45,7 @@ function col_block_permute(puzzle,col_block_a,col_block_b)
     puzzle[:,start_col_b:stop_col_b] = block[:,:]
 end
 
-function row_permute(puzzle,row_block,subrow_a,subrow_b)
+function row_permute!(puzzle,row_block,subrow_a,subrow_b)
     rank = get_rank(puzzle)
     if row_block < 1 || row_block > rank
         throw(DomainError("Invalid row block"))
@@ -65,7 +65,7 @@ function row_permute(puzzle,row_block,subrow_a,subrow_b)
     puzzle[start_row:stop_row,:] = block[:,:]
 end
 
-function col_permute(puzzle,col_block,subcol_a,subcol_b)
+function col_permute!(puzzle,col_block,subcol_a,subcol_b)
     rank=get_rank(puzzle)
     if col_block < 1 || col_block > rank
         throw(DomainError("Invalid col block"))
@@ -85,30 +85,30 @@ function col_permute(puzzle,col_block,subcol_a,subcol_b)
     puzzle[:,start_col:stop_col] = block[:,:]
 end
 
-function mirror_horizontal(puzzle)
+function mirror_horizontal!(puzzle)
     rank=get_rank(puzzle)
     if rank > 1 # blockwise swapping
         half_rank = Int16(floor(rank/2))
         for i = 1:half_rank # swap blocks
-            col_block_permute(puzzle,i,rank-i+1) 
+            col_block_permute!(puzzle,i,rank-i+1) 
             for j = 1:half_rank # swap rows in blocks
-                col_permute(puzzle,i,j,rank-j+1) 
-                col_permute(puzzle,rank-i+1,j,rank-j+1)
+                col_permute!(puzzle,i,j,rank-j+1) 
+                col_permute!(puzzle,rank-i+1,j,rank-j+1)
             end # end subrow loop
         end # end block loop
     end # end rank switch
 end
 
-function mirror_vertical(puzzle)
+function mirror_vertical!(puzzle)
     rank=get_rank(puzzle)
     # no mirroring for rank 1
     if rank > 1 # blockwise swapping
         half_rank = Int16(floor(rank/2))
         for i = 1:half_rank # swap blocks
-            row_block_permute(puzzle,i,rank-i+1) 
+            row_block_permute!(puzzle,i,rank-i+1) 
             for j = 1:half_rank # swap rows in blocks
-                row_permute(puzzle,i,j,rank-j+1) 
-                row_permute(puzzle,rank-i+1,j,rank-j+1)
+                row_permute!(puzzle,i,j,rank-j+1) 
+                row_permute!(puzzle,rank-i+1,j,rank-j+1)
             end # end subrow loop
         end # end block loop
     end # end rank switch
