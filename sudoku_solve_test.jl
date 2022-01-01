@@ -20,7 +20,3 @@ function test_solve_random_puzzle()
         end
     end
 end
-
-@testset "Solution helpers" begin
-    test_solve_random_puzzle()
-end

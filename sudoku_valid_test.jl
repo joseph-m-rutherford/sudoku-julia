@@ -18,8 +18,3 @@ function test_valid_puzzle_2()
     p[1,1] = p[1,2] # invalidate puzzle
     @test !Sudoku.valid_puzzle(p)
 end
-
-@testset "Puzzle validity checks" begin
-    test_valid_subarray()
-    test_valid_puzzle_2()
-end

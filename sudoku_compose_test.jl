@@ -129,12 +129,6 @@ function test_random_permutations(num_tests)
     @test abs(column_3_symbol_counts[9] - (1*num_tests/63))/num_tests < MAX_RESIDUAL_ERROR
 end
 
-@testset "Composition helpers statistics" begin
-    test_random_permutations(100000)
-    test_random_permutations(400000)
-    test_random_permutations(1600000)
-end
-
 function test_symbol_swap()
     puzzle_2_input = Array{Int16}(undef,(4,4))
     puzzle_2_input[:] = [1,2,0,3, 0,3,1,2, 2,0,3,1, 3,1,2,0][:]
@@ -170,7 +164,3 @@ function test_random_puzzle()
     end
 end
 
-@testset "Composition helpers" begin
-    test_symbol_swap()
-    test_random_puzzle()
-end

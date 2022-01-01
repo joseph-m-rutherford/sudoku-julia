@@ -92,11 +92,3 @@ function test_solvable_puzzle_2_assignment()
         end
     end
 end
-
-@testset "Sudoku Puzzle definitions" begin
-    test_puzzle_2()
-    test_puzzle_rank_array()
-    test_solvable_puzzle_2_construction()
-    test_solvable_puzzle_2_modification()
-    test_solvable_puzzle_2_assignment()
-end

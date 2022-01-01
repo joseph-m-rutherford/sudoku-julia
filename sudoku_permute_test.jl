@@ -54,9 +54,3 @@ function test_mirroring()
     p_reference[:] = [3,2,1,4, 1,4,3,2, 2,1,4,3, 4,3,2,1][:]
     @test p == p_reference
 end
-
-@testset "Permutations check" begin
-    test_block_permutations()
-    test_intrablock_permutations()
-    test_mirroring()
-end
