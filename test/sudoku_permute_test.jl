@@ -3,11 +3,11 @@
 #
 # Code provided under the license contained in the LICENSE file.
 #
-# This file depends upon sudoku_permute.jl to be included first.
+# This file depends upon the Sudoku module being defined first.
 
 using Test
 
-function test_block_permutations()
+function block_permutations()
     p_reference = Array{Int16}(undef,(4,4))
     #p_reference[:] = [1,2,3,4, 3,4,1,2, 2,3,4,1, 4,1,2,3][:]
     
@@ -23,7 +23,7 @@ function test_block_permutations()
     @test p == p_reference
 end
 
-function test_intrablock_permutations()
+function intrablock_permutations()
     p_reference = Array{Int16}(undef,(4,4))
     #p_reference[:] = [1,2,3,4, 3,4,1,2, 2,3,4,1, 4,1,2,3][:]
     
@@ -39,7 +39,7 @@ function test_intrablock_permutations()
     @test p == p_reference
 end
 
-function test_mirroring()
+function mirroring()
     p_reference = Array{Int16}(undef,(4,4))
     #p_reference[:] = [1,2,3,4, 3,4,1,2, 2,3,4,1, 4,1,2,3][:]
     

@@ -2,11 +2,13 @@
 # All rights reserved.
 #
 # Code provided under the license contained in the LICENSE file.
+#
+# This file depends upon the Sudoku module being defined first.
 using Test
 using Random
 
 
-function test_solve_random_puzzle()
+function solve_random_puzzle()
     rng = MersenneTwister(123456)
     for i = 1:50
         solution, puzzle = Sudoku.random_puzzle(3,rng,1000,20)

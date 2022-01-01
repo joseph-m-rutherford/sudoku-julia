@@ -3,23 +3,23 @@
 #
 # Code provided under the license contained in the LICENSE file.
 #
-# This file depends upon sudoku_common.jl being included before it.
+# This file depends upon the Sudoku module being defined first.
 
 using Test
 
-function test_puzzle_2()
+function puzzle_2()
     puzzle_2_reference = Array{Int16}(undef,(4,4))
     puzzle_2_reference[:] = [1,2,3,4, 3,4,1,2, 2,3,4,1, 4,1,2,3][:]
     @test Sudoku.puzzle_n(2) == puzzle_2_reference
 end
 
-function test_puzzle_rank_array()
+function puzzle_rank_array()
     @test Sudoku.get_rank(Sudoku.puzzle_n(2)) == 2
     @test Sudoku.get_rank(Sudoku.puzzle_n(3)) == 3
     @test Sudoku.get_rank(Sudoku.puzzle_n(4)) == 4
 end
 
-function test_solvable_puzzle_2_construction()
+function solvable_puzzle_2_construction()
     puzzle_2_reference = Array{Int16}(undef,(4,4))
     puzzle_2_reference[:] = [1,2,3,4, 3,4,1,2, 2,3,4,1, 4,1,2,3][:]
     p2 = Sudoku.SolvablePuzzle(2)
@@ -38,7 +38,7 @@ function test_solvable_puzzle_2_construction()
     @test Sudoku.uncertainty(p2) == 0
 end
 
-function test_solvable_puzzle_2_modification()
+function solvable_puzzle_2_modification()
     puzzle_2_reference = Array{Int8}(undef,(4,4))
     puzzle_2_reference[:] = [0,2,3,4, 3,0,1,2, 2,3,0,1, 4,1,2,0][:]
     p2 = Sudoku.SolvablePuzzle(Int8(2))
@@ -77,7 +77,7 @@ function test_solvable_puzzle_2_modification()
     @test Sudoku.uncertainty(p2) == 16
 end
 
-function test_solvable_puzzle_2_assignment()
+function solvable_puzzle_2_assignment()
     puzzle_2_reference = Array{Int16}(undef,(4,4))
     puzzle_2_reference[:] = [1,2,0,3, 0,3,1,2, 2,0,3,1, 3,1,2,0][:]
     p2 = Sudoku.SolvablePuzzle(2)

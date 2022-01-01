@@ -2,6 +2,8 @@
 # All rights reserved.
 #
 # Code provided under the license contained in the LICENSE file.
+#
+# This file depends upon the Sudoku module being defined first.
 using Test
 using Random
 
@@ -15,7 +17,7 @@ function multiple_random_permutations!(seed,results)
     end
 end
 
-function test_random_permutations(num_tests)
+function random_permutations(num_tests)
     all_results = zeros(Int,(num_tests,4))
     
     # Plan to split the work across all worker
@@ -129,7 +131,7 @@ function test_random_permutations(num_tests)
     @test abs(column_3_symbol_counts[9] - (1*num_tests/63))/num_tests < MAX_RESIDUAL_ERROR
 end
 
-function test_symbol_swap()
+function symbol_swap()
     puzzle_2_input = Array{Int16}(undef,(4,4))
     puzzle_2_input[:] = [1,2,0,3, 0,3,1,2, 2,0,3,1, 3,1,2,0][:]
     p2 = Sudoku.SolvablePuzzle(2)
@@ -156,7 +158,7 @@ function test_symbol_swap()
     end
 end
 
-function test_random_puzzle()
+function random_puzzle()
     rng = MersenneTwister(123456)
     for i = 1:1000
         solution, puzzle = Sudoku.random_puzzle(3,rng,1000,50)
