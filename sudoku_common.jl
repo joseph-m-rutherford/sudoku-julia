@@ -79,6 +79,31 @@ struct SolvablePuzzle
     end
 end
 
+function assign_values!(puzzle::SolvablePuzzle,new_values::Array)
+    if size(puzzle.grid) != size(new_values)
+        throw(DomainError("Mismatched shape of new values for puzzle"))
+    end
+    rank_squared = size(new_values)[1]
+    for row = 1:rank_squared
+        for col = 1:rank_squared
+            value = new_values[row,col]
+            if value < 0 || value > rank_squared
+                throw(DomainError("Invalid new value; must be in [0 (unknown), rank-squared]"))
+            elseif new_values[row,col] == 0
+                # Unknown value
+                set_unknown(puzzle,row,col)
+            else
+                v = UInt8(value)
+                p = BitVector(undef,rank_squared)
+                p .= false
+                p[v] = true
+                puzzle.grid[row,col] = PuzzleEntry(v,p)
+            end
+        end
+    end
+end
+            
+
 function get_rank(puzzle::Array)
     # Check grid size/shape
     grid_shape = size(puzzle)

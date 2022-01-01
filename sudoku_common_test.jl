@@ -77,9 +77,26 @@ function test_solvable_puzzle_2_modification()
     @test Sudoku.uncertainty(p2) == 16
 end
 
+function test_solvable_puzzle_2_assignment()
+    puzzle_2_reference = Array{Int16}(undef,(4,4))
+    puzzle_2_reference[:] = [1,2,0,3, 0,3,1,2, 2,0,3,1, 3,1,2,0][:]
+    p2 = Sudoku.SolvablePuzzle(2)
+    Sudoku.assign_values!(p2,puzzle_2_reference)
+    @test length(p2.grid) == 16
+    for i = 1:16
+        @test p2.grid[i].value == puzzle_2_reference[i]
+        if puzzle_2_reference[i] == 0
+            @test p2.grid[i].possibilities == 0xf
+        else
+            @test p2.grid[i].possibilities == (0x1 << (puzzle_2_reference[i]-1))
+        end
+    end
+end
+
 @testset "Sudoku Puzzle definitions" begin
     test_puzzle_2()
     test_puzzle_rank_array()
     test_solvable_puzzle_2_construction()
     test_solvable_puzzle_2_modification()
+    test_solvable_puzzle_2_assignment()
 end

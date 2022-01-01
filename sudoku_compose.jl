@@ -27,7 +27,7 @@ function symbol_swap!(puzzle,value_1,value_2)
                 possible_value_2 = p[value_2]
                 p[value_2] = possible_value_1
                 p[value_1] = possible_value_2
-                puzzle.grid[row,col].possibilities = p.chunks[1]
+                puzzle.grid[row,col] = PuzzleEntry(UInt8(0),p)
             elseif puzzle.grid[row,col].value == value_1
                 # Swap value
                 p[value_2] = true
@@ -99,11 +99,7 @@ function random_solution(rank,rng,permutation_count)
     for p = 1:permutation_count
        random_permutation!(result,rng)
     end
-    if valid_puzzle(as_values(result))
-        return result
-    else
-        throw(DomainError("Generated invalid puzzle"))
-    end
+    return result
 end
 
 # Given a puzzle-rank, RNG, permutation count and removal count,
@@ -112,7 +108,7 @@ function random_puzzle(rank,rng,permutation_count,removals)
     rank_squared = rank*rank
     if removals > rank_squared*rank_squared
         throw(DomainError("Cannot remove more entries than rank dictates"))
-    elseif rank_squared*rank_squared - removals <= 2*rank_squared
+    elseif rank_squared*rank_squared - removals <= 3*rank_squared
         print("WARNING: high number of removals requested for rank")
     end
     solution = random_solution(rank,rng,permutation_count)
