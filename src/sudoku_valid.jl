@@ -5,7 +5,13 @@
 #
 # This file depends upon sudoku_common.jl to be included first.
 
-function valid_subarray(rank,test)
+"""
+    valid_subarray(rank,test)
+
+Traverse an length rank*rank array of integers to report valid symbols 1:rank*rank.
+Rank is required here because we could be getting Vector or Matrix arguments.
+"""
+function valid_subarray(rank::Integer,test::Array)
     if rank < 1 || Unsigned(rank) != rank
         throw(DomainError("Invalid rank"))
     end
@@ -13,12 +19,18 @@ function valid_subarray(rank,test)
     if length(test) != rank_squared
         throw(DomainError("Array length mismatch to rank-squared"))
     end
-    add_entries = sum(test) == sum(1:rank_squared)
+    add_entries = Unsigned(sum(test)) == sum(1:rank_squared)
     multiply_entries = prod(test) == factorial(rank_squared)
     return add_entries && multiply_entries
 end
 
-function valid_puzzle(puzzle)
+
+"""
+    valid_puzzle(puzzle)
+
+Confirm that every row, column, and block of entries in 1:rank*rank.
+"""
+function valid_puzzle(puzzle::Matrix)
     rank=get_rank(puzzle)
     rank_squared = rank*rank
     result = true
