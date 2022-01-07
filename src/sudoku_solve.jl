@@ -53,10 +53,7 @@ end
 Traverse a puzzle by row, column, and block to apply logical rules.
 """
 function resolve_puzzle!(puzzle::SolvablePuzzle)
-    rank=Int16(sqrt(sqrt(length(puzzle.grid))))
-    if length(puzzle.grid) != rank*rank*rank*rank
-        throw(DimensionMismatch("Array length is not a square-of-a-square"))
-    end
+    rank=get_rank(puzzle)
     rank_squared = rank*rank
     # use logical AND throughout loops
     for rowcol = 1:rank_squared
@@ -89,7 +86,8 @@ Iteratively resolve rows, columns, and blocks of a puzzle to drive uncertainty d
 """
 function solve_puzzle!(puzzle::SolvablePuzzle)
     # Uncertainty is rank_squared*puzzle_size
-    rank_squared = Int16(sqrt(length(puzzle.grid)))
+    rank = get_rank(puzzle)
+    rank_squared = rank*rank
     maximum_uncertainty = rank_squared*rank_squared*rank_squared
     
     iteration = 0

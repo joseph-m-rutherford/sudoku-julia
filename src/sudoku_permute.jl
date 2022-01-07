@@ -115,7 +115,7 @@ Swap columns across a SolvablePuzzle.
 function mirror_horizontal!(puzzle::Matrix)
     rank=get_rank(puzzle)
     if rank > 1 # blockwise swapping
-        half_rank = Int16(floor(rank/2))
+        half_rank = Integer(floor(rank/2))
         for i = 1:half_rank # swap blocks
             col_block_permute!(puzzle,i,rank-i+1) 
             for j = 1:half_rank # swap rows in blocks
@@ -136,7 +136,7 @@ function mirror_vertical!(puzzle::Matrix)
     rank=get_rank(puzzle)
     # no mirroring for rank 1
     if rank > 1 # blockwise swapping
-        half_rank = Int16(floor(rank/2))
+        half_rank = Integer(floor(rank/2))
         for i = 1:half_rank # swap blocks
             row_block_permute!(puzzle,i,rank-i+1) 
             for j = 1:half_rank # swap rows in blocks

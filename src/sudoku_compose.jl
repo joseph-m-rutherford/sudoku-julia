@@ -32,15 +32,15 @@ function symbol_swap!(puzzle::SolvablePuzzle,value_1::Integer,value_2::Integer)
                 possible_value_2 = p[value_2]
                 p[value_2] = possible_value_1
                 p[value_1] = possible_value_2
-                puzzle.grid[row,col] = PuzzleEntry(UInt8(0),p)
+                puzzle.grid[row,col] = PuzzleEntry(Integer(0),p)
             elseif puzzle.grid[row,col].value == value_1
                 # Swap value
                 p[value_2] = true
-                puzzle.grid[row,col] = PuzzleEntry(Int8(value_2),p)
+                puzzle.grid[row,col] = PuzzleEntry(value_2,p)
             elseif puzzle.grid[row,col].value == value_2
                 # Swap value
                 p[value_1] = true
-                puzzle.grid[row,col] = PuzzleEntry(Int8(value_1),p)
+                puzzle.grid[row,col] = PuzzleEntry(value_1,p)
             else
                 # No-op
                 continue
