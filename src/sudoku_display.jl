@@ -27,7 +27,7 @@ function as_text_grid(puzzle::SolvablePuzzle)
     # for rank*rank numbers, rank*rank-1 spacers,rank doubled spacers, and 2 leading spacers =
     # 2*rank*rank + rank + 2 spaces
     column_count =2*rank*rank + rank + 2
-    fill_columns = Array{UInt8}(undef,(rank_squared,))
+    fill_columns = Array{Integer}(undef,(rank_squared,))
     next_column = 1
     for i = 1:rank # column block
         for j = 1:rank # block column
