@@ -5,7 +5,12 @@
 #
 # This file depends upon sudoku_common.jl
 
-function row_block_permute!(puzzle,row_block_a,row_block_b)
+"""
+    row_block_permute(puzzle,row_block_a,row_block_b)
+
+Swap entire block-rows within a SolvablePuzzle.
+"""
+function row_block_permute!(puzzle::Matrix,row_block_a::Integer,row_block_b::Integer)
     rank=get_rank(puzzle)
     if row_block_a < 1 || row_block_a > rank
         throw(DomainError("Invalid row block A"))
@@ -25,7 +30,13 @@ function row_block_permute!(puzzle,row_block_a,row_block_b)
     puzzle[start_row_b:stop_row_b,:] = block[:,:]
 end
 
-function col_block_permute!(puzzle,col_block_a,col_block_b)
+
+"""
+    col_block_permute(puzzle,col_block_a,col_block_b)
+
+Swap entire block-columns within a SolvablePuzzle.
+"""
+function col_block_permute!(puzzle::Matrix,col_block_a::Integer,col_block_b::Integer)
     rank = get_rank(puzzle)
     if col_block_a < 1 || col_block_a > rank
         throw(DomainError("Invalid col block A"))
@@ -45,7 +56,13 @@ function col_block_permute!(puzzle,col_block_a,col_block_b)
     puzzle[:,start_col_b:stop_col_b] = block[:,:]
 end
 
-function row_permute!(puzzle,row_block,subrow_a,subrow_b)
+
+"""
+    row_permute!(puzzle,row_block,subrow_a,subrow_b)
+
+Swap rows within a SolvablePuzzle block column.
+"""
+function row_permute!(puzzle::Matrix,row_block::Integer,subrow_a::Integer,subrow_b::Integer)
     rank = get_rank(puzzle)
     if row_block < 1 || row_block > rank
         throw(DomainError("Invalid row block"))
@@ -65,7 +82,12 @@ function row_permute!(puzzle,row_block,subrow_a,subrow_b)
     puzzle[start_row:stop_row,:] = block[:,:]
 end
 
-function col_permute!(puzzle,col_block,subcol_a,subcol_b)
+"""
+    col_permute!(puzzle,col_block,subcol_a,subcol_b)
+
+Swap columns within a SolvablePuzzle block column.
+"""
+function col_permute!(puzzle::Matrix,col_block::Integer,subcol_a::Integer,subcol_b::Integer)
     rank=get_rank(puzzle)
     if col_block < 1 || col_block > rank
         throw(DomainError("Invalid col block"))
@@ -85,7 +107,12 @@ function col_permute!(puzzle,col_block,subcol_a,subcol_b)
     puzzle[:,start_col:stop_col] = block[:,:]
 end
 
-function mirror_horizontal!(puzzle)
+"""
+    mirror_horizontal!(puzzle)
+
+Swap columns across a SolvablePuzzle.
+"""
+function mirror_horizontal!(puzzle::Matrix)
     rank=get_rank(puzzle)
     if rank > 1 # blockwise swapping
         half_rank = Int16(floor(rank/2))
@@ -99,7 +126,13 @@ function mirror_horizontal!(puzzle)
     end # end rank switch
 end
 
-function mirror_vertical!(puzzle)
+
+"""
+    mirror_vertical!(puzzle)
+
+Swap rows across a SolvablePuzzle.
+"""
+function mirror_vertical!(puzzle::Matrix)
     rank=get_rank(puzzle)
     # no mirroring for rank 1
     if rank > 1 # blockwise swapping

@@ -19,15 +19,16 @@ function puzzle_n(rank::Integer)
         throw(DomainError("Invalid puzzle rank outside [2,15]"))
     end
     rank_squared = rank*rank
-    result = Array{UInt8}(undef,(rank_squared,rank_squared))
+    result = Array{Integer}(undef,(rank_squared,rank_squared))
     for col = 1:rank_squared
-        col_shift = UInt8(floor((col-1)/rank))
+        col_shift = Integer(floor((col-1)/rank))
         for row = 1:rank_squared
             result[row,col] = ( (rank*(col-1) + (row-1)) + col_shift) % rank_squared + 1
         end
     end
     return result
 end
+
 
 """
 A maybe-unknown Sudoku value with possible values tracked.
@@ -56,15 +57,16 @@ struct PuzzleEntry
         end
         
         # Cross check value and possibilites
-        if value > rank_squared
-            throw(DomainError("Value > rank squared"))
-        elseif value == 0
+        if value == 0
             if sum(possibilities) == 1
                 throw(DomainError("Undetermined value cannot have single possibility"))
             end
         else
+            if value < 1 || value > rank_squared
+                throw(DomainError("Known puzzle entry outside range [1, rank squared]"))
+            end
             if sum(possibilities) != 1
-                throw(DomainError("Valid value must have single possibility"))
+                throw(DomainError("Known puzzle entry must have single possibility"))
             end
         end
         new(value,possibilities.chunks[1]) # Use local new method
@@ -81,7 +83,7 @@ struct SolvablePuzzle
     """
     
     """
-    function SolvablePuzzle(rank)
+    function SolvablePuzzle(rank::Integer)
         solved_puzzle = puzzle_n(rank)
         puzzle = Array{PuzzleEntry}(undef,size(solved_puzzle))
         rank_squared = rank*rank
@@ -97,15 +99,14 @@ struct SolvablePuzzle
 end
 
 """
-Assign a grid of integers into a SolvablePuzzle.
-
     assign_values!(puzzle,new_values)
+
+Assign a grid of integers into a SolvablePuzzle.
+Zero values are set as unknowns.
 
 # Arguments
 - puzzle::SolvablePuzzle: grid of Sudoku values to set.
 - new_values::Array: input integers of same shape as SolvablePuzzle.grid
-
-Zero values are set as unknowns.
 """
 function assign_values!(puzzle::SolvablePuzzle,new_values::Array)
     if size(puzzle.grid) != size(new_values)
@@ -132,9 +133,9 @@ function assign_values!(puzzle::SolvablePuzzle,new_values::Array)
 end
             
 """
-Return a Sudoku rank from the shape of a 2D aray.
-
     get_rank(puzzle)
+
+Return a Sudoku rank from the shape of a 2D aray.
 """
 function get_rank(puzzle::Array)
     grid_shape = size(puzzle)
@@ -150,18 +151,18 @@ function get_rank(puzzle::Array)
 end
 
 """
-Return a Sudoku rank from a SolvablePuzzle..
-
     get_rank(puzzle)
+
+Return a Sudoku rank from a SolvablePuzzle.
 """
 function get_rank(puzzle::SolvablePuzzle)
     return get_rank(puzzle.grid)
 end
 
 """
-Assign a position in the grid of a SolvablePuzzle to known.
-
     set_unknown(puzzle,row,col)
+
+Assign a position in the grid of a SolvablePuzzle to known.
 """
 function set_unknown(puzzle::SolvablePuzzle,row::Integer,col::Integer)
     rank = get_rank(puzzle)
@@ -173,9 +174,9 @@ function set_unknown(puzzle::SolvablePuzzle,row::Integer,col::Integer)
 end
 
 """
-Return the contents of the puzzle as a grid of strings.
-
     as_text(puzzle)
+
+Return the contents of the puzzle as a grid of strings.
 
 Known values are integers greater than 0.
 Unknown values are 0.
@@ -191,15 +192,15 @@ function as_text(puzzle::SolvablePuzzle)
 end
 
 """
-Return the contents of the puzzle as a grid of integers.
-
     as_values(puzzle)
+
+Return the contents of the puzzle as a grid of integers.
 
 Known values are integers greater than 0.
 Unknown values are 0.
 """
 function as_values(puzzle::SolvablePuzzle)
-    result = Array{UInt8}(undef, size(puzzle.grid)) # invalid data
+    result = Array{Integer}(undef, size(puzzle.grid)) # invalid data
     for i = 1:length(puzzle.grid)
         result[i] = puzzle.grid[i].value
     end
@@ -207,9 +208,9 @@ function as_values(puzzle::SolvablePuzzle)
 end
 
 """
-Return the contents of the puzzle as a grid of integers representing possible values.
-
     as_possibilities(puzzle)
+
+Return the contents of the puzzle as a grid of integers representing possible values.
 
 Known values are have one value set to true at that values index.
 Unknown values are have more than one bit set to true.
@@ -223,15 +224,15 @@ function as_possibilities(puzzle::SolvablePuzzle)
 end
 
 """
-Assess the degree of uncertainty in a SolvablePuzzle.
-
     uncertainty(puzzle)
+
+Assess the degree of uncertainty in a SolvablePuzzle.
 
 Zero uncertainty is associated with solved puzzles.
 Unsolved puzzles have uncertainty greater than zero.
 """
 function uncertainty(puzzle::SolvablePuzzle)
-    result::UInt64 = 0
+    result::Integer = 0
     rank = get_rank(puzzle.grid)
     rank_squared = rank*rank
     for i = 1:length(puzzle.grid)

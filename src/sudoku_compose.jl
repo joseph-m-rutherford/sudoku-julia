@@ -5,9 +5,14 @@
 #
 # This code depends upon sudoku_common.jl and sudoku_permute.jl
 
-# Swapping symbols keeps puzzles from looking so similar.
-# Any set of symbols works, and we just happen to use integers.
-function symbol_swap!(puzzle,value_1,value_2)
+using Random
+
+"""
+    symbol_swap!(puzzle,value_1,value_2)
+
+Within a SolvablePuzzle interchange the roles of two integers.
+"""
+function symbol_swap!(puzzle::SolvablePuzzle,value_1::Integer,value_2::Integer)
     rank = get_rank(puzzle)
     rank_squared = rank*rank
     p = BitVector(undef,rank_squared)
@@ -44,9 +49,14 @@ function symbol_swap!(puzzle,value_1,value_2)
     end # end row loop
 end
 
-# Given a puzzle and a RNG, apply some permutation to the puzzle.
-# Report the permutation as a variable-length sequence of integers.
-function random_permutation!(puzzle,rng)
+"""
+    random_permutation!(puzzle,rng)
+
+Apply a random permutation to a SolvablePuzzle and return the permutation.
+
+Permutation is reported as a variable-length sequence of integers.
+"""
+function random_permutation!(puzzle::SolvablePuzzle,rng::AbstractRNG)
     rank = get_rank(puzzle)
     # Symbols to select permutation type
     #undefined = 0 # less than a valid choice
@@ -93,8 +103,12 @@ function random_permutation!(puzzle,rng)
     end
 end
 
-# Given a rank, an RNG, and a number of permutations, make new solution.
-function random_solution(rank,rng,permutation_count)
+"""
+    random_solution(rank,rng,permutation_count)
+
+Given a rank, an RNG, and a number of permutations, make new solution.
+"""
+function random_solution(rank::Integer,rng::AbstractRNG,permutation_count::Integer)
     result = SolvablePuzzle(rank)
     for p = 1:permutation_count
        random_permutation!(result,rng)
@@ -102,9 +116,12 @@ function random_solution(rank,rng,permutation_count)
     return result
 end
 
-# Given a puzzle-rank, RNG, permutation count and removal count,
-# generate a solution, puzzle pair and return them.
-function random_puzzle(rank,rng,permutation_count,removals)
+"""
+    random_puzzle(rank,rng,permutation_count,removals)
+
+Construct a randomized solution, puzzle pair.
+"""
+function random_puzzle(rank::Integer,rng::AbstractRNG,permutation_count::Integer,removals::Integer)
     rank_squared = rank*rank
     if removals > rank_squared*rank_squared
         throw(DomainError("Cannot remove more entries than rank dictates"))
