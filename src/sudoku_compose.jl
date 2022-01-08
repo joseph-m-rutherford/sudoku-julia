@@ -15,36 +15,22 @@ Within a SolvablePuzzle interchange the roles of two integers.
 function symbol_swap!(puzzle::SolvablePuzzle,value_1::Integer,value_2::Integer)
     rank = get_rank(puzzle)
     rank_squared = rank*rank
-    p = BitVector(undef,rank_squared)
+    p = BitVector(undef,rank_squared) # reused in loop
 
     for row = 1:rank_squared
         for col = 1:rank_squared
             p .= false
-            # Every value is in one of 4 conditions:
-            #   (a) Is an unknown, and we swap posssibility for each value
-            #   (b) Is known and matches value_1, and we swap to value_2
-            #   (c) Is known and matches value_2, and we swap to value_1
-            #   (d) Is known and matches neither, so we do nothing
-            if puzzle.grid[row,col].value == 0
-                # Swap possible values
-                p.chunks[1] = puzzle.grid[row,col].possibilities
-                possible_value_1 = p[value_1]
-                possible_value_2 = p[value_2]
+            # Swap possible value roles
+            p.chunks[1] = puzzle.grid[row,col].possibilities
+            possible_value_1 = p[value_1]
+            possible_value_2 = p[value_2]
+            # Change the contents if the bits are different
+            if possible_value_1 != possible_value_2
                 p[value_2] = possible_value_1
                 p[value_1] = possible_value_2
-                puzzle.grid[row,col] = PuzzleEntry(Integer(0),p)
-            elseif puzzle.grid[row,col].value == value_1
-                # Swap value
-                p[value_2] = true
-                puzzle.grid[row,col] = PuzzleEntry(value_2,p)
-            elseif puzzle.grid[row,col].value == value_2
-                # Swap value
-                p[value_1] = true
-                puzzle.grid[row,col] = PuzzleEntry(value_1,p)
-            else
-                # No-op
-                continue
-            end # end switch on symbol match
+                reported_value = get_value(puzzle.grid[row,col])
+                puzzle.grid[row,col] = PuzzleEntry(reported_value,p)
+            end # end switch on required change
         end # end column loop
     end # end row loop
 end
@@ -135,7 +121,7 @@ function random_puzzle(rank::Integer,rng::AbstractRNG,permutation_count::Integer
         row = rand(rng,1:rank_squared)
         col = rand(rng,1:rank_squared)
         # If we hit a duplicate removal, jump around until we find an intact entry
-        while puzzle.grid[row,col].value == 0
+        while get_value(puzzle.grid[row,col]) == 0
             row = rand(rng,1:rank_squared)
             col = rand(rng,1:rank_squared)
         end

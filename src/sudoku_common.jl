@@ -37,7 +37,6 @@ If value > 0, the entry is known and 1<= value <= rank-squared.
 If value == 0, the the entry is unknown, and possible values indices into a bit vector for which true is assigned.
 """
 struct PuzzleEntry
-    value::UInt8 # 0 indicates unknown, literal value otherwise
     possibilities::UInt16 # Bitmask index = 1 iff index is allowed
     
     """
@@ -69,8 +68,25 @@ struct PuzzleEntry
                 throw(DomainError("Known puzzle entry must have single possibility"))
             end
         end
-        new(value,possibilities.chunks[1]) # Use local new method
+        new(possibilities.chunks[1]) # Use local new method
     end
+end
+
+function get_value(entry::PuzzleEntry)
+    temp = BitVector(undef,16) # Driven by storage as Int16
+    temp.chunks[1] = entry.possibilities # Convert int to BitVector
+    possible_count = 0 # Number of possibilities found
+    result = 0 # Default to unknown
+    for i in 1:length(temp)
+        if temp[i]
+            possible_count += 1
+            result = i
+        end
+    end
+    if possible_count != 1
+        result = 0
+    end
+    return result
 end
 
 """
@@ -88,7 +104,7 @@ struct SolvablePuzzle
         puzzle = Array{PuzzleEntry}(undef,size(solved_puzzle))
         rank_squared = rank*rank
         for i = 1:length(solved_puzzle)
-            v = UInt8(solved_puzzle[i])
+            v = Integer(solved_puzzle[i])
             p = BitVector(undef,rank_squared)
             p .= false
             p[v] = true
@@ -122,7 +138,7 @@ function assign_values!(puzzle::SolvablePuzzle,new_values::Array)
                 # Unknown value
                 set_unknown(puzzle,row,col)
             else
-                v = UInt8(value)
+                v = Integer(value)
                 p = BitVector(undef,rank_squared)
                 p .= false
                 p[v] = true
@@ -182,10 +198,12 @@ Known values are integers greater than 0.
 Unknown values are 0.
 """
 function as_text(puzzle::SolvablePuzzle)
+    rank = get_rank(puzzle)
     result = fill(" ",size(puzzle.grid)) # unknowns!
     for i = 1:length(puzzle.grid)
-        if puzzle.grid[i].value != 0 # fill in the knowns
-            result[i] = string(puzzle.grid[i].value)
+        value = get_value(puzzle.grid[i])
+        if value != 0 # fill in the knowns
+            result[i] = string(value)
         end
     end
     return result
@@ -200,9 +218,10 @@ Known values are integers greater than 0.
 Unknown values are 0.
 """
 function as_values(puzzle::SolvablePuzzle)
+    rank = get_rank(puzzle)
     result = Array{Integer}(undef, size(puzzle.grid)) # invalid data
     for i = 1:length(puzzle.grid)
-        result[i] = puzzle.grid[i].value
+        result[i] = get_value(puzzle.grid[i])
     end
     return result
 end
@@ -236,9 +255,10 @@ function uncertainty(puzzle::SolvablePuzzle)
     rank = get_rank(puzzle.grid)
     rank_squared = rank*rank
     for i = 1:length(puzzle.grid)
-        if puzzle.grid[i].value == 0
-            temp = BitVector(undef,rank_squared)
-            temp.chunks[1] = puzzle.grid[i].possibilities # Convert int to BitVector
+        temp = BitVector(undef,rank_squared)
+        temp.chunks[1] = puzzle.grid[i].possibilities # Convert int to BitVector
+        possibility_count = sum(temp)
+        if possibility_count > 1
             result += sum(temp)
         end
     end

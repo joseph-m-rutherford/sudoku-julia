@@ -137,7 +137,7 @@ function symbol_swap()
     p2 = Sudoku.SolvablePuzzle(2)
     Sudoku.assign_values!(p2,puzzle_2_input)
     for i = 1:length(p2.grid)
-        if p2.grid[i].value == 0
+        if Sudoku.get_value(p2.grid[i]) == 0
             # force possibilities to be either index 4 or 1
             p = BitVector(undef,4)
             p.chunks[1] = 0x9
@@ -149,7 +149,7 @@ function symbol_swap()
     puzzle_2_reference[:] = [1,4,0,3, 0,3,1,4, 4,0,3,1, 3,1,4,0][:]
     Sudoku.symbol_swap!(p2,4,2)
     for i = length(p2.grid)
-        @test p2.grid[i].value == puzzle_2_reference[i]
+        @test Sudoku.get_value(p2.grid[i]) == puzzle_2_reference[i]
         if puzzle_2_reference[i] == 0
             @test p2.grid[i].possibilities == 0x3
         else
@@ -165,4 +165,3 @@ function random_puzzle()
         @test Sudoku.valid_puzzle(Sudoku.as_values(solution))
     end
 end
-
