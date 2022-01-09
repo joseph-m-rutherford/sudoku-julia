@@ -13,18 +13,17 @@ function resolve_subarray!(test::Array{Sudoku.PuzzleEntry})
 
     # Visit each element to determine new mask
     mask = BitVector(undef,rank_squared)
+    mask .= true
     for i = 1:rank_squared
-        mask[i] = true
-    end
-    for i = 1:rank_squared
-        if test[i].value != 0
-            mask[test[i].value] = false
+        value = get_value(test[i])
+        if value != 0
+            mask[value] = false
         end
     end
     
     # Apply mask to all unknowns
     for i = 1:rank_squared
-        if test[i].value == 0
+        if get_value(test[i]) == 0
             update_possibilities = BitVector(undef,rank_squared)
             update_possibilities.chunks[1] = test[i].possibilities
             update_possibilities .&= mask
@@ -38,11 +37,7 @@ function resolve_subarray!(test::Array{Sudoku.PuzzleEntry})
                     possible_value = j
                 end
             end
-            if possibility_sum == 1
-                test[i] = Sudoku.PuzzleEntry(possible_value,update_possibilities)
-            else
-                test[i] = Sudoku.PuzzleEntry(0,update_possibilities)
-            end
+            test[i] = Sudoku.PuzzleEntry(update_possibilities)
         end
     end
 end

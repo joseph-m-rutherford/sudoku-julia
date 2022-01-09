@@ -14,6 +14,7 @@ using Test
 @testset "Common definitions" begin
     SudokuTester.puzzle_2()
     SudokuTester.puzzle_rank_array()
+    SudokuTester.puzzle_3_entry()
     SudokuTester.solvable_puzzle_2_construction()
     SudokuTester.solvable_puzzle_2_modification()
     SudokuTester.solvable_puzzle_2_assignment()

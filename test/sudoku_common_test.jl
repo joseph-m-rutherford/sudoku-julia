@@ -19,13 +19,24 @@ function puzzle_rank_array()
     @test Sudoku.get_rank(Sudoku.puzzle_n(4)) == 4
 end
 
+function puzzle_3_entry()
+    rank = 3
+    rank_squared = rank*rank
+    test_entry = Sudoku.make_entry(rank_squared,0)
+    @test Sudoku.get_value(test_entry) == 0
+    for i = 1:rank_squared
+        test_entry = Sudoku.make_entry(rank_squared,i)
+        @test Sudoku.get_value(test_entry) == i
+    end
+end
+
 function solvable_puzzle_2_construction()
     puzzle_2_reference = Array{Int16}(undef,(4,4))
     puzzle_2_reference[:] = [1,2,3,4, 3,4,1,2, 2,3,4,1, 4,1,2,3][:]
     p2 = Sudoku.SolvablePuzzle(2)
     @test length(p2.grid) == 16
     for i = 1:16
-        @test p2.grid[i].value == puzzle_2_reference[i]
+        @test Sudoku.get_value(p2.grid[i]) == puzzle_2_reference[i]
         @test p2.grid[i].possibilities == (0x1 << (puzzle_2_reference[i]-1))
     end
 
@@ -49,7 +60,7 @@ function solvable_puzzle_2_modification()
     
     for i = 1:4
         for j = 1:4
-            @test p2.grid[i,j].value == puzzle_2_reference[i,j]
+            @test Sudoku.get_value(p2.grid[i,j]) == puzzle_2_reference[i,j]
             if i == j
                 @test p2.grid[i,j].possibilities == 0xf
             else
@@ -84,7 +95,7 @@ function solvable_puzzle_2_assignment()
     Sudoku.assign_values!(p2,puzzle_2_reference)
     @test length(p2.grid) == 16
     for i = 1:16
-        @test p2.grid[i].value == puzzle_2_reference[i]
+        @test Sudoku.get_value(p2.grid[i]) == puzzle_2_reference[i]
         if puzzle_2_reference[i] == 0
             @test p2.grid[i].possibilities == 0xf
         else

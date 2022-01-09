@@ -18,7 +18,7 @@ function solve_random_puzzle()
         @test uncertainty == 0
         @test Sudoku.valid_puzzle(Sudoku.as_values(puzzle))
         for j = 1:length(puzzle.grid)
-            @test puzzle.grid[j].value == solution.grid[j].value
+            @test Sudoku.get_value(puzzle.grid[j]) == Sudoku.get_value(solution.grid[j])
         end
     end
 end
