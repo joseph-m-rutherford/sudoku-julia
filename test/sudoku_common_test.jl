@@ -22,14 +22,10 @@ end
 function puzzle_3_entry()
     rank = 3
     rank_squared = rank*rank
-    test_possibilities = BitVector(undef,rank_squared)
-    test_possibilities .= true
-    test_entry = Sudoku.PuzzleEntry(0,test_possibilities)
+    test_entry = Sudoku.make_entry(rank_squared,0)
     @test Sudoku.get_value(test_entry) == 0
     for i = 1:rank_squared
-        test_possibilities .= false
-        test_possibilities[i] = true
-        test_entry = Sudoku.PuzzleEntry(i,test_possibilities)
+        test_entry = Sudoku.make_entry(rank_squared,i)
         @test Sudoku.get_value(test_entry) == i
     end
 end

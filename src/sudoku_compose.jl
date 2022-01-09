@@ -28,8 +28,7 @@ function symbol_swap!(puzzle::SolvablePuzzle,value_1::Integer,value_2::Integer)
             if possible_value_1 != possible_value_2
                 p[value_2] = possible_value_1
                 p[value_1] = possible_value_2
-                reported_value = get_value(puzzle.grid[row,col])
-                puzzle.grid[row,col] = PuzzleEntry(reported_value,p)
+                puzzle.grid[row,col] = PuzzleEntry(p)
             end # end switch on required change
         end # end column loop
     end # end row loop

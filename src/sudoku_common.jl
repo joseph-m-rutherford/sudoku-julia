@@ -42,7 +42,7 @@ struct PuzzleEntry
     """
     Define entry with a value and a BitVector of possibilities.
     """
-    function PuzzleEntry(value::Integer,possibilities::BitVector)
+    function PuzzleEntry(possibilities::BitVector)
         rank = 0
         rank_squared = length(possibilities)
         if rank_squared == 4
@@ -53,23 +53,33 @@ struct PuzzleEntry
             rank = 4
         else
             throw(DomainError("Possibilities vector length invalid"))
-        end
-        
-        # Cross check value and possibilites
-        if value == 0
-            if sum(possibilities) == 1
-                throw(DomainError("Undetermined value cannot have single possibility"))
-            end
-        else
-            if value < 1 || value > rank_squared
-                throw(DomainError("Known puzzle entry outside range [1, rank squared]"))
-            end
-            if sum(possibilities) != 1
-                throw(DomainError("Known puzzle entry must have single possibility"))
-            end
-        end
-        new(possibilities.chunks[1]) # Use local new method
+        end      
+        new(UInt16(possibilities.chunks[1])) # Use local new method
     end
+end
+
+"""
+    make_entry(rank_squared,value)
+
+Given a squared-rank > 3 and < 17, create a new PuzzleEntry.
+A value of 0 is completely unknown.
+A value in 1:rank_squared is completely known.
+"""
+function make_entry(rank_squared::Integer, value::Integer)
+    if !(rank_squared in [4,9,16])
+        throw(DomainError("Cannot instantiate an entry for rank < 2 or > 4"))
+    end
+    if value < 0 || value > rank_squared
+        throw(DomainError("Cannot instantiate an entry from an value < 0 or > rank*rank"))
+    end
+    possibilities = BitVector(undef,rank_squared)
+    if value == 0
+        possibilities .= true
+    else
+        possibilities .= false
+        possibilities[value] = true
+    end
+    return PuzzleEntry(possibilities)
 end
 
 function get_value(entry::PuzzleEntry)
@@ -105,10 +115,7 @@ struct SolvablePuzzle
         rank_squared = rank*rank
         for i = 1:length(solved_puzzle)
             v = Integer(solved_puzzle[i])
-            p = BitVector(undef,rank_squared)
-            p .= false
-            p[v] = true
-            puzzle[i] = PuzzleEntry(v,p)
+            puzzle[i] = make_entry(rank_squared,v)
         end
         return new(puzzle)
     end
@@ -139,10 +146,7 @@ function assign_values!(puzzle::SolvablePuzzle,new_values::Array)
                 set_unknown(puzzle,row,col)
             else
                 v = Integer(value)
-                p = BitVector(undef,rank_squared)
-                p .= false
-                p[v] = true
-                puzzle.grid[row,col] = PuzzleEntry(v,p)
+                puzzle.grid[row,col] = make_entry(rank_squared,v)
             end
         end
     end
@@ -181,11 +185,9 @@ end
 Assign a position in the grid of a SolvablePuzzle to known.
 """
 function set_unknown(puzzle::SolvablePuzzle,row::Integer,col::Integer)
-    rank = get_rank(puzzle)
-    rank_squared = rank*rank
-    p = BitVector(undef,rank_squared)
+    p = BitVector(undef,size(puzzle.grid)[1])
     p .= true
-    puzzle.grid[row,col] = PuzzleEntry(0,p)
+    puzzle.grid[row,col] = PuzzleEntry(p)
     return nothing
 end
 
@@ -198,7 +200,6 @@ Known values are integers greater than 0.
 Unknown values are 0.
 """
 function as_text(puzzle::SolvablePuzzle)
-    rank = get_rank(puzzle)
     result = fill(" ",size(puzzle.grid)) # unknowns!
     for i = 1:length(puzzle.grid)
         value = get_value(puzzle.grid[i])
@@ -218,7 +219,6 @@ Known values are integers greater than 0.
 Unknown values are 0.
 """
 function as_values(puzzle::SolvablePuzzle)
-    rank = get_rank(puzzle)
     result = Array{Integer}(undef, size(puzzle.grid)) # invalid data
     for i = 1:length(puzzle.grid)
         result[i] = get_value(puzzle.grid[i])

@@ -37,11 +37,7 @@ function resolve_subarray!(test::Array{Sudoku.PuzzleEntry})
                     possible_value = j
                 end
             end
-            if possibility_sum == 1
-                test[i] = Sudoku.PuzzleEntry(possible_value,update_possibilities)
-            else
-                test[i] = Sudoku.PuzzleEntry(0,update_possibilities)
-            end
+            test[i] = Sudoku.PuzzleEntry(update_possibilities)
         end
     end
 end

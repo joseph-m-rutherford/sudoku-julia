@@ -141,7 +141,7 @@ function symbol_swap()
             # force possibilities to be either index 4 or 1
             p = BitVector(undef,4)
             p.chunks[1] = 0x9
-            p2.grid[i] = Sudoku.PuzzleEntry(UInt8(0),p)
+            p2.grid[i] = Sudoku.PuzzleEntry(p)
         end
     end
     # Interchange symbols 4 and 2
