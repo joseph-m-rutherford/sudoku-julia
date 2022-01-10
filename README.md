@@ -2,7 +2,9 @@
 Solving Sudoku puzzles the fun way -- with programming!
 
 Copyright (c) 2021, Joseph M. Rutherford
+
 All rights reserved.
+
 Code and documenatation provided under the license in the LICENSE file.
 
 This project is about me learning to solve an interesting problem
