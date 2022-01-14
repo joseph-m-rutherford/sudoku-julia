@@ -40,6 +40,7 @@ function resolve_subarray!(test::Array{Sudoku.PuzzleEntry})
             test[i] = Sudoku.PuzzleEntry(update_possibilities)
         end
     end
+    return nothing
 end
 
 """
@@ -72,15 +73,16 @@ function resolve_puzzle!(puzzle::SolvablePuzzle)
             puzzle.grid[start_row:stop_row, start_col:stop_col] .= update
         end
     end
+    return nothing
 end
 
 
 """
-    compound_resolve_subarray!(test,n)
+    resolve_subarray!(test,n)
 
 Traverse a portion of a SolvablePuzzle to reduce logical options for n cells claiming n values.
 """
-function compound_resolve_subarray!(test::Array{Sudoku.PuzzleEntry},n::Integer)
+function resolve_subarray!(test::Array{Sudoku.PuzzleEntry},n::Integer)
     rank_squared = length(test)
     for i = 1:rank_squared
         p1 = BitVector(undef,rank_squared)
@@ -129,28 +131,34 @@ function compound_resolve_subarray!(test::Array{Sudoku.PuzzleEntry},n::Integer)
         end # secondary loop to remove entries
         # End of processing for matching possibilities for outermost chosen cell
     end # primary loop looking for n-size claims to possible value
+    return nothing
 end
 
 
 """
-    compound_resolve_puzzle!(puzzle,n)
+    resolve_puzzle!(puzzle,n)
 
-Apply n-cell rule analyses to reduce uncertainty in puzzle.
+Apply n-cell compound rule analyses to reduce uncertainty in puzzle.
 """
-function compound_resolve_puzzle!(puzzle::SolvablePuzzle, n::Integer)
+function resolve_puzzle!(puzzle::SolvablePuzzle, n::Integer)
+    if n == 1
+        resolve_puzzle!(puzzle)
+        return nothing
+    end
+    # Handle shortcut for special case
     rank = get_rank(puzzle)
     rank_squared = rank*rank
-    if n != 2 # Limit to size 2 or now
-        throw(DomainError("Cannot evaluate compound resolve of size != 2"))
+    if n >= rank_squared
+        throw(DomainError("Cannot evaluate compound resolve of size >= rank_squared"))
     end
     # use logical AND throughout loops
     for rowcol = 1:rank_squared
         # check full row and col
         update = puzzle.grid[rowcol,:]
-        compound_resolve_subarray!(update,n)
+        resolve_subarray!(update,n)
         puzzle.grid[rowcol,:] .= update
         update = puzzle.grid[:,rowcol]
-        compound_resolve_subarray!(update,n)
+        resolve_subarray!(update,n)
         puzzle.grid[:,rowcol] .= update
     end
     # Check rank x rank blocks
@@ -161,19 +169,20 @@ function compound_resolve_puzzle!(puzzle::SolvablePuzzle, n::Integer)
             start_col = rank*(col_block-1)+1
             stop_col = rank*(col_block-1)+rank
             update = puzzle.grid[start_row:stop_row, start_col:stop_col]
-            compound_resolve_subarray!(update,n)
+            resolve_subarray!(update,n)
             puzzle.grid[start_row:stop_row, start_col:stop_col] .= update
         end
     end
     # Compound resolve done for all rows, cols, and blocks
+    return nothing
 end
 
 """
-    solve_puzzle!(puzzle)
+    solve_puzzle!(puzzle, n)
 
-Iteratively resolve rows, columns, and blocks of a puzzle to drive uncertainty down to zero.
+Iteratively resolve rows, columns, and blocks of a puzzle with compound resolution n.
 """
-function solve_puzzle!(puzzle::SolvablePuzzle)
+function solve_puzzle!(puzzle::SolvablePuzzle, n::Integer)
     # Uncertainty is rank_squared*puzzle_size
     rank = get_rank(puzzle)
     rank_squared = rank*rank
@@ -188,8 +197,9 @@ function solve_puzzle!(puzzle::SolvablePuzzle)
         elseif current_uncertainty == previous_uncertainty
             break # Stalled -- stop
         else
-            resolve_puzzle!(puzzle)
-            compound_resolve_puzzle!(puzzle,2)
+            for i in 1:n
+                resolve_puzzle!(puzzle,i)
+            end
             previous_uncertainty = current_uncertainty
             current_uncertainty = uncertainty(puzzle)
         end

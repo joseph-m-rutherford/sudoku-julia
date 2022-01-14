@@ -13,7 +13,7 @@ function solve_random_puzzle()
     for i = 1:50
         solution, puzzle = Sudoku.random_puzzle(3,rng,1000,20)
         @test Sudoku.valid_puzzle(Sudoku.as_values(solution))
-        iteration, uncertainty = Sudoku.solve_puzzle!(puzzle)
+        iteration, uncertainty = Sudoku.solve_puzzle!(puzzle,1)
         @test iteration > 0
         @test uncertainty == 0
         @test Sudoku.valid_puzzle(Sudoku.as_values(puzzle))
