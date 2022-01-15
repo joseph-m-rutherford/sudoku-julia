@@ -254,13 +254,18 @@ function uncertainty(puzzle::SolvablePuzzle)
     result::Integer = 0
     rank = get_rank(puzzle.grid)
     rank_squared = rank*rank
+    error_detected = false
     for i = 1:length(puzzle.grid)
         temp = BitVector(undef,rank_squared)
         temp.chunks[1] = puzzle.grid[i].possibilities # Convert int to BitVector
         possibility_count = sum(temp)
+        error_detected = error_detected || (possibility_count == 0)
         if possibility_count > 1
             result += sum(temp)
         end
+    end
+    if error_detected
+        throw(DomainError("Puzzle entry with zero valid possibilities detected."))
     end
     return result
 end
