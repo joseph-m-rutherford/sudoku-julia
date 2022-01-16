@@ -45,6 +45,7 @@ end
 
 @testset "Solution helpers" begin
     SudokuTester.solve_random_puzzle()
+    SudokuTester.backtrack_solve_puzzle()
 end
     
 end # end top-level testset
