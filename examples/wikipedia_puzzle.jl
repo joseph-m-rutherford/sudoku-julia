@@ -23,7 +23,7 @@ puzzle = Sudoku.SolvablePuzzle(3)
 Sudoku.assign_values!(puzzle,puzzle_values)
 print("\nUnsolved puzzle\n")
 print(Sudoku.as_text_grid(puzzle))
-iterations, uncertainty = Sudoku.solve_puzzle!(puzzle)
+iterations, uncertainty = Sudoku.solve_puzzle!(puzzle,1)
 print("\n\nSolution after $iterations steps\n")
 print(Sudoku.as_text_grid(puzzle))
 
@@ -32,11 +32,17 @@ print(Sudoku.as_text_grid(puzzle))
 #
 # It is an exercise for reader to compare the calculated solution to the reference
 if uncertainty != 0
-    print("Failure: puzzle solution is incomplete\n")
+    println("Failure: puzzle solution is incomplete")
 else
-    if Sudoku.valid_puzzle(Sudoku.as_values(puzzle))
-        print("Verified that solution satisfies Suduko rules\n")
+    result_values = Sudoku.as_values(puzzle)
+    if Sudoku.satisfies(puzzle_values,result_values)
+        println("Verified that solution satisfies initial puzzle")
     else
-        print("Solution is not a valid Sudoku\n")
+        println("Solution does not match original puzzle inputs")
+    end
+    if Sudoku.valid_puzzle(result_values)
+        println("Verified that solution satisfies Suduko rules")
+    else
+        println("Solution is not a valid Sudoku")
     end
 end

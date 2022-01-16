@@ -163,5 +163,6 @@ function random_puzzle()
     for i = 1:1000
         solution, puzzle = Sudoku.random_puzzle(3,rng,1000,50)
         @test Sudoku.valid_puzzle(Sudoku.as_values(solution))
+        @test Sudoku.satisfies(Sudoku.as_values(puzzle),Sudoku.as_values(solution))
     end
 end
