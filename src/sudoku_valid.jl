@@ -65,3 +65,27 @@ function valid_puzzle(puzzle::Matrix)
     end
     return result
 end
+
+"""
+   satisfies(puzzle,solution)
+
+Verify that a valid solution is a candidate for the puzzle.
+"""
+function satisfies(puzzle::Matrix,solution::Matrix)
+    if size(solution) != size(puzzle)
+        throw(DomainError("Solution cannot be checked against a different size puzzle"))
+    end
+    if !(valid_puzzle(solution))
+        throw(DomainError("Invalid solution cannot be checked against a puzzle"))
+    end
+    satisfies = true
+    for i = 1:length(puzzle)
+        if puzzle[i] == 0
+            continue
+        elseif puzzle[i] != solution[i]
+            satisfies = false
+            break
+        end
+    end
+    return satisfies
+end

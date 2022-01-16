@@ -1,4 +1,4 @@
-# Copyright (c) 2021, Joseph M. Rutherford
+# Copyright (c) 2021-2022, Joseph M. Rutherford
 # All rights reserved.
 #
 # Code provided under the license contained in the LICENSE file.
@@ -17,4 +17,14 @@ function valid_puzzle_2()
     @test Sudoku.valid_puzzle(p)
     p[1,1] = p[1,2] # invalidate puzzle
     @test !Sudoku.valid_puzzle(p)
+end
+
+function satisfies_puzzle_2()
+    p = Sudoku.puzzle_n(2)
+    s = similar(p)
+    s .= p
+    p[1,1] = 0
+    @test Sudoku.satisfies(p,s)
+    Sudoku.row_permute!(p,2,1,2)
+    @test !Sudoku.satisfies(p,s)
 end

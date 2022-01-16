@@ -40,6 +40,7 @@ end
 @testset "Validity checks" begin
     SudokuTester.valid_subarray()
     SudokuTester.valid_puzzle_2()
+    SudokuTester.satisfies_puzzle_2()
 end
 
 @testset "Solution helpers" begin
