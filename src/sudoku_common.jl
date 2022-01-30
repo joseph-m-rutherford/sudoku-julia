@@ -182,7 +182,7 @@ end
 """
     set_unknown(puzzle,row,col)
 
-Assign a position in the grid of a SolvablePuzzle to known.
+Assign a position in the grid of a SolvablePuzzle to unknown.
 """
 function set_unknown(puzzle::SolvablePuzzle,row::Integer,col::Integer)
     p = BitVector(undef,size(puzzle.grid)[1])

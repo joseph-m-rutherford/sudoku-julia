@@ -94,7 +94,69 @@ end
 Given a rank, an RNG, and a number of permutations, make new solution.
 """
 function random_solution(rank::Integer,rng::AbstractRNG,permutation_count::Integer)
+    rank_squared = rank*rank
+    # First make a blank puzzle of all possibilities
     result = SolvablePuzzle(rank)
+    for row = 1:rank_squared
+        for col = 1:rank_squared
+            set_unknown(result,row,col)
+        end
+    end
+    # Second walk the grid and remove possibilities
+    current_uncertainty = uncertainty(result)
+    set_values = 0
+    while current_uncertainty > 0
+        row = rand(rng,1:rank_squared)
+        col = rand(rng,1:rank_squared)
+        temp = BitVector(undef,rank_squared)
+        temp.chunks[1] = result.grid[row,col].possibilities
+        count = sum(temp)
+        if count > 1
+            # set entry to one of the possible values
+            selection = rand(rng,1:count)
+            found_index = 0
+            for i = 1:rank_squared
+                if temp[i]
+                    found_index += 1
+                    if found_index == selection
+                        temp .= false
+                        temp[i] = true
+                        break
+                    end
+                end
+            end
+            result.grid[row,col] = PuzzleEntry(temp)
+            set_values += 1
+        end
+
+        # Resolve puzzle until no further advances are made
+        new_uncertainty = uncertainty(result) # necessarily lower
+        while new_uncertainty != current_uncertainty
+            current_uncertainty = new_uncertainty
+            for i in 1:(rank_squared-1)
+                resolve_puzzle!(result,i)
+            end
+            new_uncertainty = uncertainty(result)
+        end
+
+        # Now search for at most 2 results via backtracking
+        # 0 means failure
+        # 1 means success
+        # 2 means keep working
+        print(Sudoku.as_text_grid(result))
+        candidates = backtrack_solve(result,rank_squared-1,rank_squared*rank_squared-set_values,1)
+        if length(candidates) == 0
+            throw(ErrorException("Selected value that made puzzle unsolvable"))
+        else
+            # pick a single result
+            new_result = rand(rng,candidates)
+            print(Sudoku.as_text_grid(new_result))
+            result.grid .= new_result.grid
+            break
+        end
+    end
+    # Now a solution is formed
+    
     for p = 1:permutation_count
        random_permutation!(result,rng)
     end

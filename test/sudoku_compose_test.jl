@@ -160,8 +160,9 @@ end
 
 function random_puzzle()
     rng = MersenneTwister(123456)
-    for i = 1:1000
-        solution, puzzle = Sudoku.random_puzzle(3,rng,1000,50)
+    for i = 1:1
+        solution, puzzle = Sudoku.random_puzzle(3,rng,0,50)
+        print(Sudoku.as_text_grid(solution))
         @test Sudoku.valid_puzzle(Sudoku.as_values(solution))
         @test Sudoku.satisfies(Sudoku.as_values(puzzle),Sudoku.as_values(solution))
     end

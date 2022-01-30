@@ -44,7 +44,7 @@ function resolve_subarray!(test::Array{Sudoku.PuzzleEntry})
 end
 
 """
-    resolve_puzzle(puzzle)
+    resolve_puzzle!(puzzle)
 
 Traverse a puzzle by row, column, and block to apply logical rules.
 """
