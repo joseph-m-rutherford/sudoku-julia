@@ -11,9 +11,9 @@ using Random
 function solve_random_puzzle()
     rng = MersenneTwister(123456)
     for i = 1:50
-        solution, puzzle = Sudoku.random_puzzle(3,rng,1000,20)
+        solution, puzzle = Sudoku.random_puzzle(3,rng,1000,25)
         @test Sudoku.valid_puzzle(Sudoku.as_values(solution))
-        iteration, uncertainty = Sudoku.solve_puzzle!(puzzle,1)
+        iteration, uncertainty = Sudoku.solve_puzzle!(puzzle,8)
         @test iteration > 0
         @test uncertainty == 0
         @test Sudoku.valid_puzzle(Sudoku.as_values(puzzle))
@@ -23,7 +23,8 @@ function solve_random_puzzle()
     end
 end
 
-function backtrack_solve_puzzle()
+
+function solve_puzzle()
     # Puzzle example from
     # https://en.wikipedia.org/wiki/Sudoku accessed 1/1/2022
     # Puzzle image license is CC0 (Public Domain Dedication) per
@@ -48,9 +49,7 @@ function backtrack_solve_puzzle()
     # Repeat w/ simple backtracking
     puzzle2 = Sudoku.SolvablePuzzle(3)
     Sudoku.assign_values!(puzzle2,puzzle_values)
-    # Shorten backtracking by eliminating some unknowns
-    Sudoku.resolve_puzzle!(puzzle2,1)
-    results = Sudoku.backtrack_solve(puzzle2,1,1)
+    results = Sudoku.backtrack_solve(puzzle2,8,81)
     @test length(results) == 1
     @test Sudoku.satisfies(puzzle_values,Sudoku.as_values(results[1]))
     @test Sudoku.valid_puzzle(Sudoku.as_values(results[1]))
