@@ -71,4 +71,33 @@ function solve_puzzle()
     @test Sudoku.satisfies(puzzle_values,Sudoku.as_values(results[1]))
     @test Sudoku.valid_puzzle(Sudoku.as_values(results[1]))
     @test Sudoku.as_values(results[1]) == Sudoku.as_values(puzzle1)
+    
+
+    # Puzzle example from
+    # https://sourceforge.net/projects/winsudoku/ accessed Jan 30, 2022
+    # Example taken from BSD-licensed project
+    puzzle_values = [
+        0 2 1 0 6 0 0 0 8;
+        8 0 0 0 0 0 7 5 0;
+        0 0 0 0 0 1 0 0 0;
+        0 0 4 9 0 3 0 0 0;
+        9 0 0 1 0 0 0 3 0;
+        1 0 0 0 0 8 0 0 0;
+        0 0 0 0 0 0 5 0 0;
+        0 7 0 0 0 9 0 0 6;
+        0 8 3 7 0 0 1 0 4]
+    puzzle = Sudoku.SolvablePuzzle(3)
+    Sudoku.assign_values!(puzzle,puzzle_values)
+    # Backtrack solve using
+    #   * up to 8-fold compound rules to simplify backtracking
+    #   * up to 57 recursive steps (24 knowns)
+    #   * solution cap of 2 to detect a unique solution
+    results = Sudoku.backtrack_solve(puzzle,8,81-24,2)
+    @test length(results) == 1
+    if length(results) == 1
+        @test Sudoku.valid_puzzle(Sudoku.as_values(results[1]))
+        @test Sudoku.satisfies(Sudoku.as_values(puzzle),Sudoku.as_values(results[1]))    
+    end
 end
+
+
