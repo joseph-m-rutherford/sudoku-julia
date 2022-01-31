@@ -7,15 +7,14 @@
 using Test
 using Random
 
-
-function solve_random_puzzle()
+function solve_random_puzzles()
     rng = MersenneTwister(123456)
     for i = 1:50
         solution, puzzle = Sudoku.random_puzzle(3,rng,1000,25)
         @test Sudoku.valid_puzzle(Sudoku.as_values(solution))
         # Exclusively rules-based solution
         puzzle1 = deepcopy(puzzle)
-        iteration, uncertainty = Sudoku.solve_puzzle!(puzzle1,1)
+        iteration, uncertainty = Sudoku.iterative_solve!(puzzle1,1)
         @test iteration > 0
         @test uncertainty == 0
         @test Sudoku.valid_puzzle(Sudoku.as_values(puzzle1))
@@ -41,7 +40,7 @@ function solve_random_puzzle()
 end
 
 
-function solve_puzzle()
+function solve_example_puzzles()
     # Puzzle example from
     # https://en.wikipedia.org/wiki/Sudoku accessed 1/1/2022
     # Puzzle image license is CC0 (Public Domain Dedication) per
@@ -58,7 +57,7 @@ function solve_puzzle()
         0 0 0 0 8 0 0 7 9]
     puzzle1 = Sudoku.SolvablePuzzle(3)
     Sudoku.assign_values!(puzzle1,puzzle_values)
-    iterations, uncertainty = Sudoku.solve_puzzle!(puzzle1,2)
+    iterations, uncertainty = Sudoku.iterative_solve!(puzzle1,2)
     @test uncertainty == 0
     @test Sudoku.satisfies(puzzle_values,Sudoku.as_values(puzzle1))
     @test Sudoku.valid_puzzle(Sudoku.as_values(puzzle1))
@@ -99,5 +98,3 @@ function solve_puzzle()
         @test Sudoku.satisfies(Sudoku.as_values(puzzle),Sudoku.as_values(results[1]))    
     end
 end
-
-

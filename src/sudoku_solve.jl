@@ -178,12 +178,12 @@ function resolve_puzzle!(puzzle::SolvablePuzzle, n::Integer)
 end
 
 """
-    solve_puzzle!(puzzle, n)
+    iterative_solve!(puzzle, n)
 
 Iteratively resolve rows, columns, and blocks of a puzzle.
 Compound rules evaluation of n >= 0 are used; n == 0 is a no-op.
 """
-function solve_puzzle!(puzzle::SolvablePuzzle, n::Integer)
+function iterative_solve!(puzzle::SolvablePuzzle, n::Integer)
     # Uncertainty is rank_squared*puzzle_size
     rank = get_rank(puzzle)
     rank_squared = rank*rank
@@ -281,7 +281,7 @@ function backtrack_solve(puzzle::Sudoku.SolvablePuzzle,n::Integer,r::Integer,max
             break
         end
         try
-            iterations, uncertainty = Sudoku.solve_puzzle!(guess,n)
+            iterations, uncertainty = Sudoku.iterative_solve!(guess,n)
             if n > 0 && uncertainty == 0
                 if Sudoku.valid_puzzle(Sudoku.as_values(guess))
                     push!(result,guess)

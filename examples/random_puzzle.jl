@@ -12,7 +12,7 @@ solution, puzzle = Sudoku.random_puzzle(3,MersenneTwister(12345),10000,45)
 # Solve puzzle and report findings
 print("\nUnsolved puzzle\n")
 print(Sudoku.as_text_grid(puzzle))
-iterations, uncertainty = Sudoku.solve_puzzle!(puzzle,2)
+iterations, uncertainty = Sudoku.iterative_solve!(puzzle,2)
 print("\n\nSolution after $iterations step(s)\n")
 print(Sudoku.as_text_grid(puzzle))
 
