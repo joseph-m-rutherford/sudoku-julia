@@ -23,7 +23,7 @@ puzzle = Sudoku.SolvablePuzzle(3)
 Sudoku.assign_values!(puzzle,puzzle_values)
 print("\nUnsolved puzzle\n")
 print(Sudoku.as_text_grid(puzzle))
-iterations, uncertainty = Sudoku.solve_puzzle!(puzzle,1)
+iterations, uncertainty = Sudoku.iterative_solve!(puzzle,1)
 print("\n\nSolution after $iterations steps\n")
 print(Sudoku.as_text_grid(puzzle))
 

@@ -33,8 +33,8 @@ end
 
 @testset "Compostition statistics" begin
     SudokuTester.random_permutations(100000)
+    SudokuTester.random_permutations(200000)
     SudokuTester.random_permutations(400000)
-    SudokuTester.random_permutations(1600000)
 end
 
 @testset "Validity checks" begin
@@ -44,8 +44,8 @@ end
 end
 
 @testset "Solution helpers" begin
-    SudokuTester.solve_random_puzzle()
-    SudokuTester.backtrack_solve_puzzle()
+    SudokuTester.solve_example_puzzles()
+    SudokuTester.solve_random_puzzles()
 end
     
 end # end top-level testset

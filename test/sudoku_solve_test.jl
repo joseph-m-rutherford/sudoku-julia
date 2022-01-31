@@ -7,23 +7,40 @@
 using Test
 using Random
 
-
-function solve_random_puzzle()
+function solve_random_puzzles()
     rng = MersenneTwister(123456)
     for i = 1:50
-        solution, puzzle = Sudoku.random_puzzle(3,rng,1000,20)
+        solution, puzzle = Sudoku.random_puzzle(3,rng,1000,25)
         @test Sudoku.valid_puzzle(Sudoku.as_values(solution))
-        iteration, uncertainty = Sudoku.solve_puzzle!(puzzle,1)
+        # Exclusively rules-based solution
+        puzzle1 = deepcopy(puzzle)
+        iteration, uncertainty = Sudoku.iterative_solve!(puzzle1,1)
         @test iteration > 0
         @test uncertainty == 0
-        @test Sudoku.valid_puzzle(Sudoku.as_values(puzzle))
-        for j = 1:length(puzzle.grid)
-            @test Sudoku.get_value(puzzle.grid[j]) == Sudoku.get_value(solution.grid[j])
+        @test Sudoku.valid_puzzle(Sudoku.as_values(puzzle1))
+        for j = 1:length(puzzle1.grid)
+            @test Sudoku.get_value(puzzle1.grid[j]) == Sudoku.get_value(solution.grid[j])
+        end
+        # Repeat using exclusively rules-evaluation in backtrack
+        puzzle2 = deepcopy(puzzle)
+        result_puzzle2 = Sudoku.backtrack_solve(puzzle2,1,1,2)
+        @test length(result_puzzle2) == 1
+        @test Sudoku.valid_puzzle(Sudoku.as_values(result_puzzle2[1]))
+        for j = 1:length(result_puzzle2[1].grid)
+            @test Sudoku.get_value(result_puzzle2[1].grid[j]) == Sudoku.get_value(solution.grid[j])
+        end
+        # Repeat using logic and not actually backtracking
+        result_puzzle3 = Sudoku.backtrack_solve(puzzle2,1,2,2)
+        @test length(result_puzzle3) == 1
+        @test Sudoku.valid_puzzle(Sudoku.as_values(result_puzzle3[1]))
+        for j = 1:length(result_puzzle3[1].grid)
+            @test Sudoku.get_value(result_puzzle3[1].grid[j]) == Sudoku.get_value(solution.grid[j])
         end
     end
 end
 
-function backtrack_solve_puzzle()
+
+function solve_example_puzzles()
     # Puzzle example from
     # https://en.wikipedia.org/wiki/Sudoku accessed 1/1/2022
     # Puzzle image license is CC0 (Public Domain Dedication) per
@@ -40,7 +57,7 @@ function backtrack_solve_puzzle()
         0 0 0 0 8 0 0 7 9]
     puzzle1 = Sudoku.SolvablePuzzle(3)
     Sudoku.assign_values!(puzzle1,puzzle_values)
-    iterations, uncertainty = Sudoku.solve_puzzle!(puzzle1,2)
+    iterations, uncertainty = Sudoku.iterative_solve!(puzzle1,2)
     @test uncertainty == 0
     @test Sudoku.satisfies(puzzle_values,Sudoku.as_values(puzzle1))
     @test Sudoku.valid_puzzle(Sudoku.as_values(puzzle1))
@@ -48,11 +65,36 @@ function backtrack_solve_puzzle()
     # Repeat w/ simple backtracking
     puzzle2 = Sudoku.SolvablePuzzle(3)
     Sudoku.assign_values!(puzzle2,puzzle_values)
-    # Shorten backtracking by eliminating some unknowns
-    Sudoku.resolve_puzzle!(puzzle2,1)
-    results = Sudoku.backtrack_solve(puzzle2,1,1)
+    results = Sudoku.backtrack_solve(puzzle2,8,81,2)
     @test length(results) == 1
     @test Sudoku.satisfies(puzzle_values,Sudoku.as_values(results[1]))
     @test Sudoku.valid_puzzle(Sudoku.as_values(results[1]))
     @test Sudoku.as_values(results[1]) == Sudoku.as_values(puzzle1)
+    
+
+    # Puzzle example from
+    # https://sourceforge.net/projects/winsudoku/ accessed Jan 30, 2022
+    # Example taken from BSD-licensed project
+    puzzle_values = [
+        0 2 1 0 6 0 0 0 8;
+        8 0 0 0 0 0 7 5 0;
+        0 0 0 0 0 1 0 0 0;
+        0 0 4 9 0 3 0 0 0;
+        9 0 0 1 0 0 0 3 0;
+        1 0 0 0 0 8 0 0 0;
+        0 0 0 0 0 0 5 0 0;
+        0 7 0 0 0 9 0 0 6;
+        0 8 3 7 0 0 1 0 4]
+    puzzle = Sudoku.SolvablePuzzle(3)
+    Sudoku.assign_values!(puzzle,puzzle_values)
+    # Backtrack solve using
+    #   * up to 8-fold compound rules to simplify backtracking
+    #   * up to 57 recursive steps (24 knowns)
+    #   * solution cap of 2 to detect a unique solution
+    results = Sudoku.backtrack_solve(puzzle,8,81-24,2)
+    @test length(results) == 1
+    if length(results) == 1
+        @test Sudoku.valid_puzzle(Sudoku.as_values(results[1]))
+        @test Sudoku.satisfies(Sudoku.as_values(puzzle),Sudoku.as_values(results[1]))    
+    end
 end

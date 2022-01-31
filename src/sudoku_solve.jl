@@ -178,11 +178,12 @@ function resolve_puzzle!(puzzle::SolvablePuzzle, n::Integer)
 end
 
 """
-    solve_puzzle!(puzzle, n)
+    iterative_solve!(puzzle, n)
 
-Iteratively resolve rows, columns, and blocks of a puzzle with compound resolution n.
+Iteratively resolve rows, columns, and blocks of a puzzle.
+Compound rules evaluation of n >= 0 are used; n == 0 is a no-op.
 """
-function solve_puzzle!(puzzle::SolvablePuzzle, n::Integer)
+function iterative_solve!(puzzle::SolvablePuzzle, n::Integer)
     # Uncertainty is rank_squared*puzzle_size
     rank = get_rank(puzzle)
     rank_squared = rank*rank
@@ -212,98 +213,97 @@ end
     guess_solutions(puzzle)
 
 Return a vector of single-entry guesses for the unknowns.
-Array length must equal the numerical uncertainty of the puzzle.
+All guesses correspond to possible values of a single entry.
 Each guessed new puzzle may be attempted for further solution.
 If valid after solution, the guess must satisfy puzzle.
 """
 function guess_solutions(puzzle::Sudoku.SolvablePuzzle)
-    initial_uncertainty = Sudoku.uncertainty(puzzle)
-    # For each possible value, 
-    #    1. instantiate a puzzle with that value set
-    #    2. try to solve the rest of the puzzle
-    #    3. if uncertain, repeat
-    running_uncertainty::Integer = 0
-    result = Array{Sudoku.SolvablePuzzle}(undef,initial_uncertainty)
+    # Find the point of greatest uncertainty
+    peak_possibility = 0
+    peak_index = 0
     rank = Sudoku.get_rank(puzzle.grid)
     rank_squared = rank*rank
     for i = 1:length(puzzle.grid)
-        entry = BitVector(undef,rank_squared)
-        entry.chunks[1] = puzzle.grid[i].possibilities # Convert int to BitVector
-        possibility_count = sum(entry)
-        if possibility_count > 1 # This is an unknown
-            for j = 1:rank_squared
-                if entry[j]
-                    guess_entry = BitVector(undef,rank_squared)
-                    guess_entry .= false
-                    guess_entry[j] = true
-                    # Push the guess into the work queue
-                    running_uncertainty += 1
-                    result[running_uncertainty] = Sudoku.SolvablePuzzle(rank)
-                    result[running_uncertainty].grid .= puzzle.grid
-                    result[running_uncertainty].grid[i] = Sudoku.PuzzleEntry(guess_entry)
-                end
-            end # finalize guess loop
-        end # branch for evaluating an unknown
-    end # loop over all entries in guess
-    if running_uncertainty != initial_uncertainty
+        temp = BitVector(undef,rank_squared)
+        temp.chunks[1] = puzzle.grid[i].possibilities # Convert int to BitVector
+        possibility_count = sum(temp)
+        if possibility_count > peak_possibility
+            peak_possibility = possibility_count
+            peak_index = i
+        end
+    end
+    if peak_possibility < 1
+        throw(DomainError("Cannot solve an overdetermined puzzle"))
+    end
+    # Now make guesses from this this one entry
+    results = Array{Sudoku.SolvablePuzzle}(undef,peak_possibility)
+    for i in 1:peak_possibility
+        results[i] = SolvablePuzzle(rank)
+        results[i].grid .= puzzle.grid
+    end
+    next_result_index = 1
+    entry = BitVector(undef,rank_squared)
+    entry.chunks[1] = puzzle.grid[peak_index].possibilities
+    for i = 1:rank_squared
+        if entry[i]     
+            # Attempt to solve with this guess
+            guess_entry = BitVector(undef,rank_squared)
+            guess_entry .= false
+            guess_entry[i] = true
+            results[next_result_index].grid[peak_index] = Sudoku.PuzzleEntry(guess_entry)
+            next_result_index += 1
+        end
+    end
+    return results
+    if next_result_index != (peak_possibility+1)
         throw(ErrorException("Guessing solutions did not correctly traverse the uncertainty"))
     end
     return result
 end
 
 """
-    backtrack_solve(puzzle,n,r)
+    backtrack_solve(puzzle,n,r,c)
 
 Attempt solution by guessing an instance of all unknown values.
-Solutions with compound rule size n are evaluated.
+Compound rule size n >= 0 are evaluated to reduce search space (n==0 means no reductions attempted).
 Indeterminate solutions are recursed up to the given limit r.
+Maximum solution count max at which evaluation will terminate.
 """
-function backtrack_solve(puzzle::Sudoku.SolvablePuzzle,n::Integer,r::Integer)
+function backtrack_solve(puzzle::Sudoku.SolvablePuzzle,n::Integer,r::Integer,max::Integer)
+    result = Array{SolvablePuzzle}(undef,0)
+    if r < 1 || max < 1
+        return result
+    end
+    # Gather a small volley of guesses from the single most unknown entry
     guesses = Sudoku.guess_solutions(puzzle)
-    valid_guesses = Set{Integer}([])
-    for i = 1:length(guesses)
+    for guess in guesses
+        if length(result) == max # Check for termination criteria
+            break
+        end
         try
-            iterations, uncertainty = Sudoku.solve_puzzle!(guesses[i],n)
-            if uncertainty != 0 && r > 0
-                backtrack = backtrack_solve(guesses[i],n,r-1)
-                if length(backtrack) > 1
-                    throw(ErrorException("Backtracking recursion found multiple solutions"))
-                elseif length(backtrack) == 1
-                    guesses[i].grid .= backtrack[1].grid
+            iterations, uncertainty = Sudoku.iterative_solve!(guess,n)
+            if n > 0 && uncertainty == 0
+                if Sudoku.valid_puzzle(Sudoku.as_values(guess))
+                    push!(result,guess)
                 end
-                # If backtrack returned a zero-length array, guesses[i] is invalid
-            end
-            if Sudoku.valid_puzzle(Sudoku.as_values(guesses[i]))
-                valid_guesses = union(valid_guesses,[i])
+            else # guaranteed above r > 0
+                backtrack = backtrack_solve(guess,n,r-1,max-length(result))
+                for b in backtrack
+                    if Sudoku.valid_puzzle(Sudoku.as_values(b))
+                        push!(result,b)
+                    end
+                    if length(result) == max # Check for termination criteria
+                        break
+                    end
+                end
             end
         catch e
             # DomainErrors may occur with bad guesses
             if !isa(e,DomainError)
                 throw(e)
             end
-        end # try blcok
+        end # try block
     end # loop over all guesses
-    result = Array{Sudoku.SolvablePuzzle}(undef,length(valid_guesses))
-    # If any guesses are valid solutions, they should all be equal.
-    if length(valid_guesses) > 0
-        valid_guesses_begin, iter_state = iterate(valid_guesses)
-        iterator = iterate(valid_guesses,iter_state)
-        all_match = true # using Boolean AND in loop
-        while iterator !== nothing
-            value, iter_state = iterator
-            if Sudoku.as_values(guesses[valid_guesses_begin]) != Sudoku.as_values(guesses[value])
-                all_match = false
-            end
-            iterator = iterate(valid_guesses,iter_state)
-        end
-        # If we confirm a perfect match, return the result
-        if all_match
-            result = Array{Sudoku.SolvablePuzzle}(undef,(1,))
-            result[1] = Sudoku.SolvablePuzzle(Sudoku.get_rank(puzzle))
-            result[1].grid .= guesses[valid_guesses_begin].grid
-        else
-            throw(ErrorException("Backtracking identified multiple disparate solutions"))
-        end
-    end
+    # Return whatever is found
     return result
 end
