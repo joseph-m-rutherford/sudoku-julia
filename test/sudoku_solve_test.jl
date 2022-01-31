@@ -13,12 +13,29 @@ function solve_random_puzzle()
     for i = 1:50
         solution, puzzle = Sudoku.random_puzzle(3,rng,1000,25)
         @test Sudoku.valid_puzzle(Sudoku.as_values(solution))
-        iteration, uncertainty = Sudoku.solve_puzzle!(puzzle,8)
+        # Exclusively rules-based solution
+        puzzle1 = deepcopy(puzzle)
+        iteration, uncertainty = Sudoku.solve_puzzle!(puzzle1,1)
         @test iteration > 0
         @test uncertainty == 0
-        @test Sudoku.valid_puzzle(Sudoku.as_values(puzzle))
-        for j = 1:length(puzzle.grid)
-            @test Sudoku.get_value(puzzle.grid[j]) == Sudoku.get_value(solution.grid[j])
+        @test Sudoku.valid_puzzle(Sudoku.as_values(puzzle1))
+        for j = 1:length(puzzle1.grid)
+            @test Sudoku.get_value(puzzle1.grid[j]) == Sudoku.get_value(solution.grid[j])
+        end
+        # Repeat using exclusively rules-evaluation in backtrack
+        puzzle2 = deepcopy(puzzle)
+        result_puzzle2 = Sudoku.backtrack_solve(puzzle2,1,1,2)
+        @test length(result_puzzle2) == 1
+        @test Sudoku.valid_puzzle(Sudoku.as_values(result_puzzle2[1]))
+        for j = 1:length(result_puzzle2[1].grid)
+            @test Sudoku.get_value(result_puzzle2[1].grid[j]) == Sudoku.get_value(solution.grid[j])
+        end
+        # Repeat using logic and not actually backtracking
+        result_puzzle3 = Sudoku.backtrack_solve(puzzle2,1,2,2)
+        @test length(result_puzzle3) == 1
+        @test Sudoku.valid_puzzle(Sudoku.as_values(result_puzzle3[1]))
+        for j = 1:length(result_puzzle3[1].grid)
+            @test Sudoku.get_value(result_puzzle3[1].grid[j]) == Sudoku.get_value(solution.grid[j])
         end
     end
 end
@@ -49,7 +66,7 @@ function solve_puzzle()
     # Repeat w/ simple backtracking
     puzzle2 = Sudoku.SolvablePuzzle(3)
     Sudoku.assign_values!(puzzle2,puzzle_values)
-    results = Sudoku.backtrack_solve(puzzle2,8,81)
+    results = Sudoku.backtrack_solve(puzzle2,8,81,2)
     @test length(results) == 1
     @test Sudoku.satisfies(puzzle_values,Sudoku.as_values(results[1]))
     @test Sudoku.valid_puzzle(Sudoku.as_values(results[1]))

@@ -180,7 +180,8 @@ end
 """
     solve_puzzle!(puzzle, n)
 
-Iteratively resolve rows, columns, and blocks of a puzzle with compound resolution n.
+Iteratively resolve rows, columns, and blocks of a puzzle.
+Compound rules evaluation of n >= 0 are used; n == 0 is a no-op.
 """
 function solve_puzzle!(puzzle::SolvablePuzzle, n::Integer)
     # Uncertainty is rank_squared*puzzle_size
@@ -261,30 +262,40 @@ function guess_solutions(puzzle::Sudoku.SolvablePuzzle)
 end
 
 """
-    backtrack_solve(puzzle,n,r)
+    backtrack_solve(puzzle,n,r,c)
 
 Attempt solution by guessing an instance of all unknown values.
-Solutions with compound rule size n are evaluated.
+Compound rule size n >= 0 are evaluated to reduce search space (n==0 means no reductions attempted).
 Indeterminate solutions are recursed up to the given limit r.
+Maximum solution count max at which evaluation will terminate.
 """
-function backtrack_solve(puzzle::Sudoku.SolvablePuzzle,n::Integer,r::Integer)
+function backtrack_solve(puzzle::Sudoku.SolvablePuzzle,n::Integer,r::Integer,max::Integer)
+    result = Array{SolvablePuzzle}(undef,0)
+    if r < 1 || max < 1
+        return result
+    end
     # Gather a small volley of guesses from the single most unknown entry
     guesses = Sudoku.guess_solutions(puzzle)
-    valid_guesses = Set{Integer}([])
-    for i = 1:length(guesses)
+    for guess in guesses
+        if length(result) == max # Check for termination criteria
+            break
+        end
         try
-            iterations, uncertainty = Sudoku.solve_puzzle!(guesses[i],n)
-            if uncertainty != 0 && r > 0
-                backtrack = backtrack_solve(guesses[i],n,r-1)
-                if length(backtrack) > 1
-                    throw(ErrorException("Backtracking recursion found multiple solutions"))
-                elseif length(backtrack) == 1
-                    guesses[i].grid .= backtrack[1].grid
+            iterations, uncertainty = Sudoku.solve_puzzle!(guess,n)
+            if n > 0 && uncertainty == 0
+                if Sudoku.valid_puzzle(Sudoku.as_values(guess))
+                    push!(result,guess)
                 end
-                # If backtrack returned a zero-length array, guesses[i] is invalid
-            end
-            if Sudoku.valid_puzzle(Sudoku.as_values(guesses[i]))
-                valid_guesses = union(valid_guesses,[i])
+            else # guaranteed above r > 0
+                backtrack = backtrack_solve(guess,n,r-1,max-length(result))
+                for b in backtrack
+                    if Sudoku.valid_puzzle(Sudoku.as_values(b))
+                        push!(result,b)
+                    end
+                    if length(result) == max # Check for termination criteria
+                        break
+                    end
+                end
             end
         catch e
             # DomainErrors may occur with bad guesses
@@ -293,13 +304,6 @@ function backtrack_solve(puzzle::Sudoku.SolvablePuzzle,n::Integer,r::Integer)
             end
         end # try block
     end # loop over all guesses
-    # If any guesses are valid solutions, only one should be so for a well-posed puzzle
-    if length(valid_guesses) > 1
-        throw(ErrorException("Backtracking identified multiple disparate solutions"))
-    end
-    result = Array{Sudoku.SolvablePuzzle}(undef,length(valid_guesses))
-    for i in valid_guesses
-        result[1] = guesses[i]
-    end
+    # Return whatever is found
     return result
 end
