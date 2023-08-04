@@ -2,10 +2,6 @@
 # All rights reserved.
 #
 # Code provided under the license contained in the LICENSE file.
-# Copyright (c) 2021, Joseph M. Rutherford
-# All rights reserved.
-#
-# Code provided under the license contained in the LICENSE file.
 #
 # This file depends upon sudoku_common.jl
 
