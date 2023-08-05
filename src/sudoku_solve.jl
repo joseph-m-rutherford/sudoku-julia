@@ -266,10 +266,10 @@ end
     backtrack_solve_step(guess,n,r,max)
 
 Attempt solution by guessing an instance of all unknown values.
+Calls top level backtrack_solve() over again.
 Compound rule size n >= 0 are evaluated to reduce search space (n==0 means no reductions attempted).
 Indeterminate solutions are recursed up to the given limit r.
 Maximum solution count max at which evaluation will terminate.
-Warning: Does not safety-check arguments as a non-user-facing function.
 """
 function backtrack_solve_step(guess::Sudoku.SolvablePuzzle,n::Integer,r::Integer,max::Integer)
     # Always return an array of at least zero-length
@@ -309,9 +309,7 @@ end
     backtrack_solve(puzzle,n,r,max)
 
 Attempt solution by guessing an instance of all unknown values.
-Compound rule size n >= 0 are evaluated to reduce search space (n==0 means no reductions attempted).
-Indeterminate solutions are recursed up to the given limit r.
-Maximum solution count max at which evaluation will terminate.
+Calls the single step function within independent threads.
 """
 function backtrack_solve(puzzle::Sudoku.SolvablePuzzle,n::Integer,r::Integer,max::Integer)
     result = Array{SolvablePuzzle}(undef,0)
@@ -320,16 +318,34 @@ function backtrack_solve(puzzle::Sudoku.SolvablePuzzle,n::Integer,r::Integer,max
     end
     # Gather a small volley of guesses from the single most unknown entry
     guesses = Sudoku.guess_solutions(puzzle)
-    guess_tasks = map(guesses) do guess
-        Threads.@spawn backtrack_solve_step(guess,n,r,max)
-    end
-    all_solutions = fetch.(guess_tasks)
-    for solution_set in all_solutions
-        for solution in solution_set
-            if length(result) == max # Check for termination criteria
-                break
-            else
-                push!(result,solution)
+    # Larger guess counts mean more threading opportunities
+    if length(guesses) < 3
+        # Stay serial
+        for guess in guesses
+            solution_set = backtrack_solve_step(guess,n,r,max)
+            for solution in solution_set
+                if length(result) == max
+                    break
+                else
+                    push!(result,solution)
+                end
+            end
+        end
+    else
+        # Map each guess to a thread
+        guess_tasks = map(guesses) do guess
+            Threads.@spawn backtrack_solve_step(guess,n,r,max)
+        end
+        # Rejoin all thread's results
+        all_solutions = fetch.(guess_tasks)
+        for solution_set in all_solutions
+            # In each set of results, extract the identified valid solutions
+            for solution in solution_set
+                if length(result) == max # Check for termination criteria
+                    break
+                else
+                    push!(result,solution)
+                end
             end
         end
     end

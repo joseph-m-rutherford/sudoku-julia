@@ -26,7 +26,7 @@ print(Sudoku.as_text_grid(puzzle))
 #   * up to 8-fold compound rules to simplify backtracking
 #   * up to 57 recursive steps (24 knowns)
 #   * solution cap of 2 to detect a unique solution
-results = Sudoku.backtrack_solve(puzzle,2,81-24,2)
+results = Sudoku.backtrack_solve(puzzle,8,81-24,2)
 if length(results) == 0
     println("Failure: puzzle solution is incomplete")
 elseif length(results) == 1
