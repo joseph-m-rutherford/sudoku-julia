@@ -43,7 +43,7 @@ end
     SudokuTester.satisfies_puzzle_2()
 end
 
-@testset "Solution helpers" begin
+@testset "Solve helpers" begin
     SudokuTester.solve_example_puzzles()
     SudokuTester.solve_random_puzzles()
 end

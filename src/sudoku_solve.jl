@@ -2,6 +2,7 @@
 # All rights reserved.
 #
 # Code provided under the license contained in the LICENSE file.
+using Base.Threads
 
 """
     resolve_subarray!(test)
@@ -262,12 +263,53 @@ function guess_solutions(puzzle::Sudoku.SolvablePuzzle)
 end
 
 """
-    backtrack_solve(puzzle,n,r,c)
+    backtrack_solve_step(guess,n,r,max)
 
 Attempt solution by guessing an instance of all unknown values.
+Calls top level backtrack_solve() over again.
 Compound rule size n >= 0 are evaluated to reduce search space (n==0 means no reductions attempted).
 Indeterminate solutions are recursed up to the given limit r.
 Maximum solution count max at which evaluation will terminate.
+"""
+function backtrack_solve_step(guess::Sudoku.SolvablePuzzle,n::Integer,r::Integer,max::Integer)
+    # Always return an array of at least zero-length
+    result = Array{SolvablePuzzle}(undef,0)
+    if r < 1 || max < 1
+        return result
+    end
+
+    try
+        # Attempt solution without further recursion
+        iterations, uncertainty = Sudoku.iterative_solve!(guess,n)
+        if n > 0 && uncertainty == 0
+            if Sudoku.valid_puzzle(Sudoku.as_values(guess))
+                push!(result,guess)
+            end
+        else # guaranteed above r > 0
+            backtrack = backtrack_solve(guess,n,r-1,max-length(result))
+            for b in backtrack
+                if Sudoku.valid_puzzle(Sudoku.as_values(b))
+                    push!(result,b)
+                end
+            end
+        end
+    catch e
+        # DomainErrors may occur with bad guesses
+        if !isa(e,DomainError)
+            throw(e)
+        end
+    end # try block
+
+    # Return whatever is found
+    return result
+end
+
+
+"""
+    backtrack_solve(puzzle,n,r,max)
+
+Attempt solution by guessing an instance of all unknown values.
+Calls the single step function within independent threads.
 """
 function backtrack_solve(puzzle::Sudoku.SolvablePuzzle,n::Integer,r::Integer,max::Integer)
     result = Array{SolvablePuzzle}(undef,0)
@@ -276,34 +318,37 @@ function backtrack_solve(puzzle::Sudoku.SolvablePuzzle,n::Integer,r::Integer,max
     end
     # Gather a small volley of guesses from the single most unknown entry
     guesses = Sudoku.guess_solutions(puzzle)
-    for guess in guesses
-        if length(result) == max # Check for termination criteria
-            break
+    # Larger guess counts mean more threading opportunities
+    if length(guesses) < 3
+        # Stay serial
+        for guess in guesses
+            solution_set = backtrack_solve_step(guess,n,r,max)
+            for solution in solution_set
+                if length(result) == max
+                    break
+                else
+                    push!(result,solution)
+                end
+            end
         end
-        try
-            iterations, uncertainty = Sudoku.iterative_solve!(guess,n)
-            if n > 0 && uncertainty == 0
-                if Sudoku.valid_puzzle(Sudoku.as_values(guess))
-                    push!(result,guess)
-                end
-            else # guaranteed above r > 0
-                backtrack = backtrack_solve(guess,n,r-1,max-length(result))
-                for b in backtrack
-                    if Sudoku.valid_puzzle(Sudoku.as_values(b))
-                        push!(result,b)
-                    end
-                    if length(result) == max # Check for termination criteria
-                        break
-                    end
+    else
+        # Map each guess to a thread
+        guess_tasks = map(guesses) do guess
+            Threads.@spawn backtrack_solve_step(guess,n,r,max)
+        end
+        # Rejoin all thread's results
+        all_solutions = fetch.(guess_tasks)
+        for solution_set in all_solutions
+            # In each set of results, extract the identified valid solutions
+            for solution in solution_set
+                if length(result) == max # Check for termination criteria
+                    break
+                else
+                    push!(result,solution)
                 end
             end
-        catch e
-            # DomainErrors may occur with bad guesses
-            if !isa(e,DomainError)
-                throw(e)
-            end
-        end # try block
-    end # loop over all guesses
+        end
+    end
     # Return whatever is found
     return result
 end
