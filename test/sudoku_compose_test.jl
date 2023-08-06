@@ -28,7 +28,7 @@ function random_permutations(num_tests)
     for i = 1:num_tasks
         rng_seeds[i] = rand(seed_rng,1000:100000)
     end
-    workload = Int(num_tests/num_tasks)
+    workload = num_tests ÷ num_tasks
     Threads.@threads for i = 1:num_tasks
         if i == num_tasks
             multiple_random_permutations!(
